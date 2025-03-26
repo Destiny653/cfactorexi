@@ -35,17 +35,54 @@ export interface Review {
   reviewerEmail: string;
 }
 
+ 
 export interface Product {
   id: string;
   title: string;
   description: string;
   price: number;
+  discountPercentage?: number;
   thumbnail?: string;
+  images?: string[];
   stock: number;
   rating?: number;
   reviews?: Review[];
   brand?: string;
   category: string;
+  sku?: string;
+  shippingInformation?: string;
+  returnPolicy?: string;
+  tags?: string[];
+  meta?: {
+    createdAt: string;
+    updatedAt: string;
+    barcode?: string;
+    qrCode?: string;
+  };
+  dimensions?: {
+    width: number;
+    height: number;
+    depth: number;
+  };
+  weight?: number;
+  warrantyInformation?: string;
+  availabilityStatus?: string;
+  minimumOrderQuantity?: number;
+}
+
+export interface Comment {
+  id: string;
+  body: string;
+  postId: string;
+  likes?: number;
+  user: {
+    id: string;
+    username: string;
+    fullName: string;
+    avatar?: string;
+  };
+  date: string;
+  approved: boolean;
 }
 
 export interface Post {
@@ -59,19 +96,10 @@ export interface Post {
     likes: number;
     dislikes: number;
   };
-  user: User;
-  views?: number;
-}
-
-export interface Comment {
-  id: string;
-  body: string;
-  date: string;
-  approved: boolean;
-  user: User;
-  postId: string;
-  postTitle?: string;
-  likes?: number;
+  views: number;
+  userId: number;
+  user?: User; // Optional user details
+  comments?: Comment[]; // Added comments array
 }
 
 export interface SidebarItem {

@@ -9,8 +9,7 @@ import { commentService } from '../services/commentService';
 import Sidebar from '../components/dashboard/Sidebar';
 import DashboardStats from '../components/dashboard/DashboardStats';
 import ProductsTable from '../components/dashboard/ProductsTable';
-import PostsTable from '../components/dashboard/PostsTable';
-import CommentsTable from '../components/dashboard/CommentsTable';
+import PostsTable from '../components/dashboard/PostsTable'; 
 import AddProductForm from '../components/dashboard/AddProductForm';
 import AddPostForm from '../components/dashboard/AddPostForm';
 import { Product, Post, Comment } from '../types/dashboardTypes';
@@ -120,7 +119,7 @@ const Dashboard: React.FC = () => {
         setMobileOpen={setMobileOpen}
       />
 
-      <main className="lg:ml-72 w-full min-h-screen p-4 sm:p-8 bg-gray-50 overflow-auto">
+      <main className="lg:ml-[15rem] w-full min-h-screen p-4 sm:p-8 bg-gray-50 overflow-auto">
         <div className="lg:hidden mb-4 flex items-center justify-between">
           <Sheet>
             <SheetTrigger asChild>
@@ -195,9 +194,7 @@ const Dashboard: React.FC = () => {
                 {selectedView === 'products' ? (
                   <ProductsTable data={paginatedData as Product[]} />
                 ) : selectedView === 'posts' ? (
-                  <PostsTable data={paginatedData as Post[]} />
-                ) : selectedView === 'comments' ? (
-                  <CommentsTable data={paginatedData as Comment[]} />
+                  <PostsTable data={paginatedData as Post[]} /> 
                 ) : null}
 
                 {totalPages > 1 && (

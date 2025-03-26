@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  Activity, ShoppingCart, FileText, MessageCircle, Grid, BarChart2, Layers, User, Settings, Loader2,ChevronLeft, ChevronRight, Search, Plus, 
-  MoreVertical, Star, ThumbsUp, ThumbsDown, Bell, Calendar, Clock, Tag,CreditCard, Package, Users, ArrowUp, ArrowDown,Menu,ChevronDown
+  Activity, ShoppingCart, FileText, MessageCircle, Grid, BarChart2, Layers, User, Settings, Loader2, ChevronLeft, ChevronRight, Search, Plus,
+  MoreVertical, Star, ThumbsUp, ThumbsDown, Bell, Calendar, Clock, Tag, CreditCard, Package, Users, ArrowUp, ArrowDown, Menu, ChevronDown
 } from 'lucide-react';
 import { Button } from "../components/ui/button";
 import { useAuth } from '../context/AuthContext';
@@ -16,7 +16,7 @@ import { Progress } from "../components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, } from "../components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
-import { Sheet, SheetContent, SheetTrigger } from "../components/ui/sheet";
+import { Sheet, SheetTrigger } from "../components/ui/sheet";
 
 // Form interface
 
@@ -161,8 +161,8 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedView, setSelectedView, mobile
           <button
             key={view}
             className={`w-full flex items-center px-4 py-3 rounded-lg transition-colors mb-1 ${selectedView === view
-                ? 'bg-blue-700 text-white font-medium shadow-md'
-                : 'text-blue-100 hover:bg-blue-700/50 hover:text-white'}
+              ? 'bg-blue-700 text-white font-medium shadow-md'
+              : 'text-blue-100 hover:bg-blue-700/50 hover:text-white'}
             `}
             onClick={() => {
               setSelectedView(view);
@@ -609,7 +609,6 @@ const DashboardStats: React.FC = () => {
     weeklySales: 0
   });
   const [loading, setLoading] = useState<boolean>(true);
-  const [activeTab, setActiveTab] = useState<string>('overview');
   const [timeRange, setTimeRange] = useState<string>('week');
 
   // Mock sales data for the chart
@@ -1348,7 +1347,7 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleAddProduct = async (productData: ProductFormData) => {
+  const handleAddProduct = async () => {
     try {
       // Replace with your actual API call
       // await productService.createProduct(productData);
@@ -1358,7 +1357,7 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleAddPost = async (postData: PostFormData) => {
+  const handleAddPost = async () => {
     try {
       // Replace with your actual API call
       // await postService.createPost(postData);
@@ -1434,7 +1433,7 @@ const Dashboard: React.FC = () => {
               >
                 <Menu className="h-5 w-5" />
               </Button>
-            </SheetTrigger> 
+            </SheetTrigger>
           </Sheet>
           <h1 className="text-xl font-bold ml-2 capitalize">{selectedView}</h1>
           <div className="w-8"></div> {/* Spacer for alignment */}

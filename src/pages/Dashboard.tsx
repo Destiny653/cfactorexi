@@ -4,41 +4,50 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Sheet, SheetTrigger } from "../components/ui/sheet";
 import { productService } from '../services/productService';
-import { postService } from '../services/postService';
-import { commentService } from '../services/commentService';
+import { postService } from '../services/postService'; 
 import Sidebar from '../components/dashboard/Sidebar';
 import DashboardStats from '../components/dashboard/DashboardStats';
 import ProductsTable from '../components/dashboard/ProductsTable';
-import PostsTable from '../components/dashboard/PostsTable'; 
+import PostsTable from '../components/dashboard/PostsTable';
 import AddProductForm from '../components/dashboard/AddProductForm';
 import AddPostForm from '../components/dashboard/AddPostForm';
-import { Product, Post, Comment } from '../types/dashboardTypes';
+import { userService } from '../services/userService';
+import { orderService } from '../services/orderService';
+import UsersTable from '../components/dashboard/UsersTable';
+import OrdersTable from '../components/dashboard/OrdersTable';
+import { Product, Post, Comment, User, Order } from '../types/dashboardTypes';
 
 const Dashboard: React.FC = () => {
   const [selectedView, setSelectedView] = useState<string>('dashboard');
-  const [data, setData] = useState<Product[] | Post[] | Comment[]>([]);
+  const [data, setData] = useState<Product[] | Post[] | Comment[] | User[] | Order[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [mobileOpen, setMobileOpen] = useState<boolean>(false);
   const [productFormOpen, setProductFormOpen] = useState(false);
   const [postFormOpen, setPostFormOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const itemsPerPage = 13;
 
   const fetchData = async () => {
     setLoading(true);
+    setError(null);
     try {
-      let result: Product[] | Post[] | Comment[] = [];
+      let result: Product[] | Post[] | Comment[] | User[] | Order[] = [];
       if (selectedView === 'products') {
         result = await productService.getAllProducts();
       } else if (selectedView === 'posts') {
         result = await postService.getAllPosts();
-      } else if (selectedView === 'comments') {
-        result = await commentService.getAllComments();
+      } else if (selectedView === 'users') {
+        result = await userService.getAllUsers();
+      } else if (selectedView === 'orders') {
+        result = await orderService.getAllOrders();
+        console.log("Result: ", result);
       }
       setData(result);
     } catch (error) {
       console.error('Failed to fetch data:', error);
+      setError(`Failed to load ${selectedView}. Please try again.`);
       setData([]);
     } finally {
       setLoading(false);
@@ -67,7 +76,7 @@ const Dashboard: React.FC = () => {
 
 
   useEffect(() => {
-    if (['products', 'posts', 'comments'].includes(selectedView)) {
+    if (['products', 'posts', 'orders', 'users'].includes(selectedView)) {
       fetchData();
     } else {
       setData([]);
@@ -92,11 +101,20 @@ const Dashboard: React.FC = () => {
           post.body.toLowerCase().includes(searchTerm.toLowerCase()) ||
           post.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
         );
-      } else if (selectedView === 'comments') {
-        const comment = item as Comment;
+      } else if (selectedView === 'users') {
+        const user = item as User;
         return (
-          comment.body.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (comment.user?.username?.toLowerCase().includes(searchTerm.toLowerCase()) || false)
+          user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.username.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      } else if (selectedView === 'orders') {
+        const order = item as Order;
+        return (
+          order.id.toString().includes(searchTerm) ||
+          order.userId.toString().includes(searchTerm) ||
+          order.products.some(p => p.title.toLowerCase().includes(searchTerm.toLowerCase()))
         );
       }
       return true;
@@ -149,6 +167,8 @@ const Dashboard: React.FC = () => {
           onSubmit={handleAddPost}
         />
 
+        {/* comments */}
+
         {selectedView === 'dashboard' ? (
           <DashboardStats />
         ) : (
@@ -159,7 +179,8 @@ const Dashboard: React.FC = () => {
                 <p className="text-sm text-gray-500">
                   {selectedView === 'products' ? 'Manage your product inventory' :
                     selectedView === 'posts' ? 'View and manage all posts' :
-                      selectedView === 'comments' ? 'Moderate user comments' : ''}
+                      selectedView === 'users' ? 'Manage user accounts' :
+                        selectedView === 'orders' ? 'View and process customer orders' : ''}
                 </p>
               </div>
               <div className="flex gap-3">
@@ -189,12 +210,20 @@ const Dashboard: React.FC = () => {
               <div className="flex justify-center items-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
               </div>
+            ) : error ? (
+              <div className="flex justify-center items-center h-64 text-red-500">
+                {error}
+              </div>
             ) : (
               <>
                 {selectedView === 'products' ? (
                   <ProductsTable data={paginatedData as Product[]} />
                 ) : selectedView === 'posts' ? (
-                  <PostsTable data={paginatedData as Post[]} /> 
+                  <PostsTable data={paginatedData as Post[]} />
+                ) : selectedView === 'users' ? (
+                  <UsersTable data={paginatedData as User[]} />
+                ) : selectedView === 'orders' ? (
+                  <OrdersTable data={paginatedData as Order[]} />
                 ) : null}
 
                 {totalPages > 1 && (

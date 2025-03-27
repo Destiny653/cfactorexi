@@ -1,0 +1,70 @@
+import { api } from './api';
+import { Order } from '../types/dashboardTypes';
+
+export const orderService = {
+    async getAllOrders(): Promise<Order[]> {
+        try {
+          const response = await api.get('/carts');
+          const carts = response.data.carts || response.data || [];
+          
+          return carts.map((cart: any) => ({
+            id: cart.id,
+            products: (cart.products || []).map((product: any) => ({
+              id: product.id,
+              title: product.title || 'Unknown Product',
+              price: product.price || 0,
+              quantity: product.quantity || 1,
+              total: product.total || 0,
+              discountPercentage: product.discountPercentage || 0,
+              discountedTotal: product.discountedTotal || 0,
+              thumbnail: product.thumbnail || ''
+            })),
+            total: cart.total || 0,
+            discountedTotal: cart.discountedTotal || 0,
+            userId: cart.userId || 0,
+            totalProducts: cart.totalProducts || 0,
+            totalQuantity: cart.totalQuantity || 0,
+            status: this.getRandomStatus(),
+            date: cart.date || new Date().toISOString()
+          }));
+        } catch (error) {
+          console.error('Error fetching orders:', error);
+          throw error;
+        }
+      },
+  async getOrderById(id: number): Promise<Order> {
+    try {
+      const response = await api.get(`/carts/${id}`); // Note the endpoint change to /carts
+      const cart = response.data;
+      
+      return {
+        id: cart.id,
+        products: cart.products.map((product: any) => ({
+          id: product.id,
+          title: product.title,
+          price: product.price,
+          quantity: product.quantity,
+          total: product.total,
+          discountPercentage: product.discountPercentage,
+          discountedTotal: product.discountedTotal,
+          thumbnail: product.thumbnail
+        })),
+        total: cart.total,
+        discountedTotal: cart.discountedTotal,
+        userId: cart.userId,
+        totalProducts: cart.totalProducts,
+        totalQuantity: cart.totalQuantity,
+        status: this.getRandomStatus(),
+        date: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error(`Error fetching order ${id}:`, error);
+      throw error;
+    }
+  },
+
+  getRandomStatus(): Order['status'] {
+    const statuses: Order['status'][] = ['pending', 'shipped', 'delivered', 'cancelled'];
+    return statuses[Math.floor(Math.random() * statuses.length)];
+  }
+};

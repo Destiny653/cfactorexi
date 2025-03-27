@@ -27,6 +27,25 @@ export interface User {
   name?: string;
 }
 
+export interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  username: string;
+  name?: string;
+  image: string;
+  role: 'admin' | 'customer' | 'editor';
+  phone: string;
+  address: {
+    city: string;
+    state: string;
+  };
+  company?: {
+    name: string;
+  };
+}
+
 export interface Review {
   rating: number;
   comment: string;
@@ -140,3 +159,28 @@ export interface Statistics {
   monthlyGrowth: number;
   weeklySales: number;
 }
+
+export interface Order {
+  id: number;
+  products: {
+    id: number;
+    title: string;
+    price: number;
+    quantity: number;
+    total: number;
+    discountPercentage: number;
+    discountedTotal: number;
+    thumbnail: string;
+  }[];
+  total: number;
+  discountedTotal: number;
+  userId: number;
+  totalProducts: number;
+  totalQuantity: number;
+  status?: 'pending' | 'shipped' | 'delivered' | 'cancelled';
+  date?: string;
+}
+
+
+
+// Add these to your existing types

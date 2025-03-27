@@ -14,7 +14,7 @@ export const commentService = {
   async getAllComments() {
     try {
       const response = await api.get('/comments');
-      return response.data.comments;
+      return await response.data.comments;
     } catch (error) {
       console.error('Error fetching comments:', error);
       throw error;

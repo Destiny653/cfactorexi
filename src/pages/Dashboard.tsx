@@ -27,7 +27,7 @@ const Dashboard: React.FC = () => {
   const [productFormOpen, setProductFormOpen] = useState(false);
   const [postFormOpen, setPostFormOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const itemsPerPage = 13;
+  const itemsPerPage = 15;
 
   const fetchData = async () => {
     setLoading(true);

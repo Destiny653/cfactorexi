@@ -8,8 +8,37 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { DataTableProps } from '../../types/dashboardTypes';
 
-const UsersTable: React.FC<DataTableProps<User>> = ({ data }) => {
-    if (data.length === 0) {
+const UsersTable: React.FC<DataTableProps<User>> = ({ data = [] }) => {
+    // Data normalization function
+    const getSafeUsers = () => {
+        return data.map(user => ({
+            ...user,
+            id: user.id || Math.random().toString(36).substring(2, 9),
+            firstName: user.firstName || 'Unknown',
+            lastName: user.lastName || 'User',
+            username: user.username || `user${Math.floor(Math.random() * 1000)}`,
+            email: user.email || 'no-email@example.com',
+            phone: user.phone || 'N/A',
+            image: user.image || '',
+            role: ['admin', 'user'].includes(user.role || '') ? user.role : 'user',
+            address: user.address ? {
+                ...user.address,
+                city: user.address.city || 'Unknown',
+                state: user.address.state || ''
+            } : {
+                city: 'Unknown',
+                state: ''
+            },
+            company: user.company ? (() => {
+                const { name, ...rest } = user.company;
+                return { ...rest, name: name || '' };
+            })() : null
+        }));
+    };
+
+    const safeUsers = getSafeUsers();
+
+    if (safeUsers.length === 0) {
         return (
             <div className="text-center py-12">
                 <Users className="h-12 w-12 mx-auto text-gray-400" />
@@ -32,19 +61,23 @@ const UsersTable: React.FC<DataTableProps<User>> = ({ data }) => {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {data.map((user) => (
+                    {safeUsers.map((user) => (
                         <TableRow key={user.id} className="hover:bg-gray-50/50">
                             <TableCell>
                                 <div className="flex items-center gap-3">
                                     <Avatar className="h-8 w-8">
-                                        <AvatarImage src={user.image} />
+                                        <AvatarImage src={user.image} alt={`${user.firstName} ${user.lastName}`} />
                                         <AvatarFallback>
-                                            {(user.firstName?.charAt(0) || '')}{(user.lastName?.charAt(0) || '')}
-                                        </AvatarFallback>
+                                                {(user.firstName.charAt(0) + user.lastName.charAt(0)) || 'UU'}
+                                            </AvatarFallback>
                                     </Avatar>
                                     <div>
-                                        <div className="font-medium">{user.firstName} {user.lastName}</div>
-                                        <div className="text-sm text-gray-500">@{user.username}</div>
+                                        <div className="font-medium">
+                                            {user.firstName} {user.lastName}
+                                        </div>
+                                        <div className="text-sm text-gray-500">
+                                            @{user.username}
+                                        </div>
                                     </div>
                                 </div>
                             </TableCell>
@@ -52,7 +85,9 @@ const UsersTable: React.FC<DataTableProps<User>> = ({ data }) => {
                                 <div className="space-y-1">
                                     <div className="flex items-center text-sm">
                                         <Mail className="h-4 w-4 mr-2 text-gray-500" />
-                                        <span className="truncate max-w-[180px]">{user.email}</span>
+                                        <span className="truncate max-w-[180px]" title={user.email}>
+                                            {user.email}
+                                        </span>
                                     </div>
                                     <div className="flex items-center text-sm text-gray-500">
                                         <Phone className="h-4 w-4 mr-2" />
@@ -62,7 +97,7 @@ const UsersTable: React.FC<DataTableProps<User>> = ({ data }) => {
                             </TableCell>
                             <TableCell>
                                 <div className="text-sm">
-                                    {user.address?.city}, {user.address?.state}
+                                    {user.address.city}{user.address.state ? `, ${user.address.state}` : ''}
                                 </div>
                                 {user.company?.name && (
                                     <div className="text-sm text-gray-500">

@@ -53,7 +53,7 @@ export default function ForgotPasswordForm() {
 
      const req = await response.json();
 
-    //   navigate to resaet password with the token from return 
+    //   navigate to reset password with the token from return 
         if (req.token) {
             router(`/reset-password?token=${req.token}`);
         }

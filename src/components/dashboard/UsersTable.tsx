@@ -26,7 +26,7 @@ const UsersTable: React.FC<DataTableProps<User>> = ({ data = [] }) => {
                 city: user.address.city || 'Unknown',
                 state: user.address.state || ''
             } : {
-                city: 'Unknown',
+                city: 'Unknown', 
                 state: ''
             },
             company: user.company ? (() => {

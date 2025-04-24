@@ -15,7 +15,7 @@ import {
 } from '../../components/ui/form';
 import { Input } from '../../components/ui/input';
 import { toast } from 'sonner';
-import {Link, useNavigate }from 'react-router-dom';
+import {Link}from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Icons } from '../../components/icons';
 import { API_URL } from '../../helper/url';
@@ -34,7 +34,7 @@ export default function ForgotPasswordForm() {
     },
   });
 
-    const router = useNavigate();
+    // const router = useNavigate();
 
   const { mutate: sendResetEmail, isPending } = useMutation({
     mutationFn: async (data: ForgotPasswordFormValues) => {
@@ -49,17 +49,10 @@ export default function ForgotPasswordForm() {
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to send reset email');
-      }
-
-     const req = await response.json();
-
-    //   navigate to reset password with the token from return 
-        if (req.token) {
-            router(`/reset-password?token=${req.token}`);
-        }
-
+      } 
       return response.json();
     },
+
     onSuccess: () => {
       toast.success('Password reset email sent. Please check your inbox.');
       form.reset();

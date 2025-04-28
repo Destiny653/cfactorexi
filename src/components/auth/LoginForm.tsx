@@ -1,5 +1,4 @@
- // components/auth/LoginForm.tsx
-'use client';
+ 'use client';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -16,11 +15,13 @@ import {
 } from '../../components/ui/form';
 import { Input } from '../../components/ui/input';
 import { toast } from 'sonner';
-import {Link}from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Icons } from '../../components/icons';
 import { API_URL } from '../../helper/url';
 import { useAuth } from '../../context/AuthContext';
+import { useState } from 'react';
+
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
@@ -31,6 +32,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export default function LoginForm() {
   const router = useNavigate();
   const { login } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -42,7 +44,7 @@ export default function LoginForm() {
 
   const { mutate: loginUser, isPending } = useMutation({
     mutationFn: async (data: LoginFormValues) => {
-      const response = await fetch(API_URL+'/auth/login', {
+      const response = await fetch(API_URL + '/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -50,23 +52,28 @@ export default function LoginForm() {
         body: JSON.stringify(data),
       });
 
+      const responseData = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Login failed');
+        throw new Error(responseData.message || 'Login failed');
       }
 
-      console.log('Login response:', response);
       await login(data.email, data.password);
-
-      return response.json();
+      return responseData;
     },
     onSuccess: (data) => {
       localStorage.setItem('token', data.token);
-      toast.success('Login successful');
+      toast.success('Login successful', {
+        position: 'top-center',
+        duration: 3000
+      });
       router('/dashboard');
     },
-    onError: (error) => {
-      toast.error(error.message);
+    onError: (error: Error) => {
+      toast.error(error.message, {
+        position: 'top-center',
+        duration: 5000
+      });
     },
   });
 
@@ -120,12 +127,26 @@ export default function LoginForm() {
                         </Link>
                       </div>
                       <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="••••••••"
-                          {...field}
-                          className="focus:ring-2 focus:ring-blue-500"
-                        />
+                        <div className="relative">
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="••••••••"
+                            {...field}
+                            className="focus:ring-2 focus:ring-blue-500 pr-10"
+                          />
+                          <button
+                            type="button"
+                            className="absolute right-3 top-1/2 -translate-y-1/2"
+                            onClick={() => setShowPassword(!showPassword)}
+                            aria-label={showPassword ? "Hide password" : "Show password"}
+                          >
+                            {showPassword ? (
+                              <Icons.EyeOffIcon className="h-4 w-4" />
+                            ) : (
+                              <Icons.EyeIcon className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
                       </FormControl>
                       <FormMessage className="text-xs" />
                     </FormItem>
@@ -133,7 +154,11 @@ export default function LoginForm() {
                 />
               </div>
               
-              <Button type="submit" className="w-full" disabled={isPending}>
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={isPending}
+              >
                 {isPending ? (
                   <Icons.Spinner className="mr-2 h-4 w-4 animate-spin" />
                 ) : null}

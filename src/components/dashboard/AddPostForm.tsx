@@ -1,25 +1,60 @@
 import React, { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Badge } from "../ui/badge";
+import { toast } from 'sonner';
 import { PostFormData } from '../../types/dashboardTypes';
+import { API_URL } from '../../helper/url';
 
 interface AddPostFormProps {
     open: boolean;
     onClose: () => void;
-    onSubmit: (data: PostFormData) => Promise<void>;
 }
 
-const AddPostForm: React.FC<AddPostFormProps> = ({ open, onClose, onSubmit }) => {
+const AddPostForm: React.FC<AddPostFormProps> = ({ open, onClose }) => {
+    const queryClient = useQueryClient();
     const [formData, setFormData] = useState<PostFormData>({
         title: '',
         body: '',
         tags: [],
-        published: true
+        published: true,  
     });
     const [tagInput, setTagInput] = useState('');
-    const [loading, setLoading] = useState(false);
+
+    const createPostMutation = useMutation({
+        mutationFn: async (postData: PostFormData) => {
+            const response = await fetch(`${API_URL}/posts`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(postData),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to create post');
+            }
+
+            return response.json();
+        },
+        onSuccess: () => {
+            toast.success('Post created successfully!');
+            queryClient.invalidateQueries({ queryKey: ['posts'] });
+            onClose();
+            setFormData({
+                title: '',
+                body: '',
+                tags: [],
+                published: true, 
+            });
+        },
+        onError: (error: Error) => {
+            toast.error(`Error: ${error.message}`);
+        }
+    });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -46,15 +81,9 @@ const AddPostForm: React.FC<AddPostFormProps> = ({ open, onClose, onSubmit }) =>
         }));
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
-        try {
-            await onSubmit(formData);
-            onClose();
-        } finally {
-            setLoading(false);
-        }
+        createPostMutation.mutate(formData);
     };
 
     if (!open) return null;
@@ -156,15 +185,15 @@ const AddPostForm: React.FC<AddPostFormProps> = ({ open, onClose, onSubmit }) =>
                                 type="button"
                                 variant="outline"
                                 onClick={onClose}
-                                disabled={loading}
+                                disabled={createPostMutation.isPending}
                             >
                                 Cancel
                             </Button>
                             <Button
                                 type="submit"
-                                disabled={loading}
+                                disabled={createPostMutation.isPending}
                             >
-                                {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                                {createPostMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                                 Create Post
                             </Button>
                         </div>

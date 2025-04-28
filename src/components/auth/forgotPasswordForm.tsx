@@ -8,10 +8,11 @@ import { Button } from '../../components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '../../components/ui/form';
 import { Input } from '../../components/ui/input';
 import { toast } from 'sonner';
-import {Link}from 'react-router-dom';
+import {Link, useNavigate}from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Icons } from '../../components/icons';
 import { API_URL } from '../../helper/url';
+
 
 const forgotPasswordSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -26,34 +27,59 @@ export default function ForgotPasswordForm() {
       email: '',
     },
   });
+  
+  const router = useNavigate(); 
 
-    // const router = useNavigate();
-
-  const { mutate: sendResetEmail, isPending } = useMutation({
-    mutationFn: async (data: ForgotPasswordFormValues) => {
-      const response = await fetch(API_URL+'/auth/forgot-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to send reset email');
-      } 
-      return response.json();
-    },
-
-    onSuccess: () => {
-      toast.success('Password reset email sent. Please check your inbox.');
-      form.reset();
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  });
+    const { mutate: sendResetEmail, isPending } = useMutation({
+      mutationFn: async (data: ForgotPasswordFormValues) => {
+        try {
+          const response = await fetch(API_URL + '/auth/forgot-password', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+          });
+    
+          const responseData = await response.json();
+          
+          if (!response.ok) {
+            throw new Error(responseData.message || 'Failed to send reset email');
+          }
+          
+          return responseData;
+        } catch (error) {
+          console.error("Mutation error:", error);
+          throw error;
+        }
+      },
+    
+      onSuccess: (data) => {
+        console.log("Mutation success:", data);
+        toast.success('Password reset email sent. Please check your inbox.', {
+          duration: 5000,
+          position: 'top-center'
+        });
+        form.reset();
+        
+        if (data && !data.isVerified && data.token) {
+          router('/reset-password?token=' + data.token);
+        }else{
+          toast.error('Failed to send reset email. Please try again.', {
+            duration: 5000,
+            position: 'top-center'
+          });
+          form.reset(); 
+        }
+      },
+      onError: (error) => {
+        console.error("Mutation error:", error);
+        toast.error(error.message, {
+          duration: 5000,
+          position: 'top-center'
+        });
+      },
+    }); 
 
   const onSubmit = (data: ForgotPasswordFormValues) => {
     sendResetEmail(data);

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { API_URL } from '../helper/url';
 
 interface User {
   id: number;
@@ -11,7 +12,7 @@ interface User {
 
 export const login = async (username: string, password: string): Promise<User> => {
   try {
-    const response = await axios.post('https://dummyjson.com/auth/login', {
+    const response = await axios.post(API_URL+'/auth/login', {
       username: username,
       password: password,
       expiresInMins: 60, // optional, defaults to 60

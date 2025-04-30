@@ -1,4 +1,4 @@
- 'use client';
+'use client';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -29,7 +29,7 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
-export default function LoginForm() { 
+export default function LoginForm() {
 
   const router = useNavigate();
   const { login } = useAuth();
@@ -47,7 +47,7 @@ export default function LoginForm() {
     mutationFn: async (data: LoginFormValues) => {
       const response = await fetch(API_URL + '/auth/login', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
@@ -56,7 +56,11 @@ export default function LoginForm() {
       const responseData = await response.json();
 
       if (!response.ok) {
-        throw new Error(responseData.message || 'Login failed');
+        toast.error(responseData.message, {
+          position: 'top-center',
+          duration: 5000,
+        });
+        return;
       }
 
       await login(data.email, data.password);
@@ -112,7 +116,7 @@ export default function LoginForm() {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="password"
@@ -154,10 +158,10 @@ export default function LoginForm() {
                   )}
                 />
               </div>
-              
-              <Button 
-                type="submit" 
-                className="w-full" 
+
+              <Button
+                type="submit"
+                className="w-full"
                 disabled={isPending}
               >
                 {isPending ? (
@@ -167,7 +171,7 @@ export default function LoginForm() {
               </Button>
             </form>
           </Form>
-          
+
           <div className="mt-6 text-center text-sm">
             Don't have an account?{' '}
             <Link

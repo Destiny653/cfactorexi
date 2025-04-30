@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'; 
+import React, { useState, useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2, X, Image as ImageIcon } from 'lucide-react';
 import { Button } from "../ui/button";
@@ -15,7 +15,7 @@ interface AddProductFormProps {
 const AddProductForm: React.FC<AddProductFormProps> = ({ open, onClose, onSubmit }) => {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -23,13 +23,14 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ open, onClose, onSubmit
     category: '',
     tags: [] as string[],
     published: true,
+    stock: 0
   });
-  
+
   const [files, setFiles] = useState<{
     thumbnail?: File;
     images: File[];
   }>({ images: [] });
-  
+
   const [tagInput, setTagInput] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -42,16 +43,16 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ open, onClose, onSubmit
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
-    
+
     const newFiles = Array.from(e.target.files);
     const newThumbnail = files.thumbnail || newFiles[0];
     const remainingImages = newFiles.slice(files.thumbnail ? 0 : 1);
-    
+
     setFiles({
       thumbnail: newThumbnail,
       images: [...files.images, ...remainingImages]
     });
-    
+
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -95,17 +96,18 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ open, onClose, onSubmit
   const createProductMutation = useMutation({
     mutationFn: async () => {
       const formDataToSend = new FormData();
-      
+
       // Append product data
       formDataToSend.append('title', formData.title);
       formDataToSend.append('description', formData.description);
       formDataToSend.append('price', formData.price.toString());
       formDataToSend.append('category', formData.category);
       formDataToSend.append('published', formData.published.toString());
+      formDataToSend.append('stock', formData.stock.toString());
       formData.tags.forEach(tag => {
         formDataToSend.append('tags[]', tag);
       });
-      
+
       // Append files
       if (files.thumbnail) {
         formDataToSend.append('thumbnail', files.thumbnail);
@@ -113,7 +115,7 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ open, onClose, onSubmit
       files.images.forEach(image => {
         formDataToSend.append('images', image);
       });
-      
+
       await onSubmit(formDataToSend);
     },
     onSuccess: () => {
@@ -135,6 +137,7 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ open, onClose, onSubmit
       category: '',
       tags: [],
       published: true,
+      stock: 0
     });
     setFiles({ images: [] });
     setTagInput('');
@@ -198,21 +201,18 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ open, onClose, onSubmit
                 />
               </div>
 
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="published"
-                  name="published"
-                  checked={formData.published}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    published: e.target.checked
-                  }))}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label htmlFor="published" className="ml-2 block text-sm text-gray-700">
-                  Publish immediately
+              <div>
+                <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-1">
+                  Stock
                 </label>
+                <Input
+                  type="text"
+                  name="stock"
+                  id="stock"
+                  required
+                  value={formData.stock}
+                  onChange={handleChange}
+                />
               </div>
             </div>
 
@@ -254,8 +254,8 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ open, onClose, onSubmit
                     className="hidden"
                   />
                   <span className="text-sm text-gray-500">
-                    {files.thumbnail || files.images.length > 0 
-                      ? `${files.thumbnail ? 1 : 0} thumbnail, ${files.images.length} images` 
+                    {files.thumbnail || files.images.length > 0
+                      ? `${files.thumbnail ? 1 : 0} thumbnail, ${files.images.length} images`
                       : 'No images selected'}
                   </span>
                 </div>

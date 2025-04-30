@@ -22,7 +22,7 @@ export interface CreateProductDto {
 }
 
 export interface Post {
-  id: number;
+  _id: number;
   title: string;
   body: string;
   tags: string[];
@@ -37,6 +37,11 @@ export interface CreatePostDto {
   published?: boolean;
   userId: number;
 } 
+
+interface DeleteProduct {
+  success: boolean,
+  message: string,
+}
 
 
 
@@ -64,7 +69,7 @@ export const productService = {
         throw new Error('Failed to create product');
       }
     },
-  async getProductById(id: number): Promise<Product> {
+  async getProductById(id: string): Promise<Product> {
     try {
       const response = await api.get(`/products/${id}`);
       return response.data;
@@ -72,24 +77,39 @@ export const productService = {
       console.error(`Error fetching product ${id}:`, error);
       throw error;
     }
-  }, 
+  },
 
-  async updateProduct(id: number, productData: Partial<CreateProductDto>): Promise<Product> {
+  async updateProduct(
+    id: string, 
+    productData: Partial<CreateProductDto> | FormData
+  ): Promise<Product> {
     try {
-      const response = await api.put(`/products/${id}`, productData);
+      const config = productData instanceof FormData 
+        ? { headers: { 'Content-Type': 'multipart/form-data' } }
+        : {};
+  
+      const response = await api.put(`/products/${id}`, productData, config);
       return response.data;
     } catch (error) {
       console.error(`Error updating product ${id}:`, error);
       throw error;
     }
   },
-
-  async deleteProduct(id: number): Promise<void> {
+  
+  async deleteProduct(id: string): Promise<DeleteProduct> {
     try {
       await api.delete(`/products/${id}`);
+      this.getAllProducts()
+      return {
+        success: true,
+        message: `Product deleted sucessfully!`
+      }
     } catch (error) {
       console.error(`Error deleting product ${id}:`, error);
-      throw error;
+      return {
+        success: false,
+        message: `Error deleting product ${id}: ${error}`
+      }
     }
   }
 };

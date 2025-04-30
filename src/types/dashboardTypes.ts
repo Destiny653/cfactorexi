@@ -58,6 +58,7 @@ export interface Review {
 
  
 export interface Product {
+  published: boolean;
   _id: string;
   title: string;
   description: string;
@@ -183,6 +184,23 @@ export interface Order {
   date?: string;
 }
 
+export interface CreateProductDto {
+  title: string;
+  description: string;
+  price: number;
+  category: string;
+  tags: string[];
+  published: boolean;
+  stock: number;
+  thumbnail?: File | string;
+  images?: (File | string)[];
+}
+
+export interface UpdateProductDto extends Partial<CreateProductDto> {
+  id: string;
+  existingThumbnail?: string;
+  existingImages?: string[];
+}
 
 
 // Add these to your existing types

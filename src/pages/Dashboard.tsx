@@ -64,7 +64,7 @@ const Dashboard: React.FC = () => {
       console.error('Failed to add product', error);
       toast.error('Failed to create product. Please try again.');
     }
-  };
+  }; 
 
   const handleAddPost = async (postData: PostFormData) => {
     try {
@@ -162,7 +162,7 @@ const Dashboard: React.FC = () => {
         <AddProductForm
           open={productFormOpen}
           onClose={() => setProductFormOpen(false)}
-          onSubmit={handleAddProduct}
+          onSubmit={handleAddProduct} 
         />
 
         <AddPostForm

@@ -1,6 +1,5 @@
- // components/dashboard/ProductsTable.tsx
 import React, { useState, useMemo } from 'react';
-import { Package, Plus, Star, MoreVertical, Filter, X, Search } from 'lucide-react';
+import { Package, Plus, Star, MoreVertical, Filter, X, Search, Loader2 } from 'lucide-react';
 import { Button } from "../ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { Badge } from "../ui/badge";
@@ -10,12 +9,37 @@ import { Input } from "../ui/input";
 import { Product } from '../../types/dashboardTypes';
 import { DataTableProps } from '../../types/dashboardTypes';
 import ProductDetailsModal from './ProductDetailsModal';
+import UpdateProductForm from './UpdateProductForm';
+import { CreateProductDto, productService } from '../../services/productService';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../ui/alert-dialog';
 
 const ProductsTable: React.FC<DataTableProps<Product>> = ({ data }) => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [priceRange,] = useState<[number, number]>([0, 1000]);
+  const [priceRange] = useState<[number, number]>([0, 1000]);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<string | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [productToEdit, setProductToEdit] = useState<Product | null>(null);
+  const queryClient = useQueryClient();
+
+  // Delete product mutation
+  const deleteProductMutation = useMutation({
+    mutationFn: async (productId: string) => {
+      await productService.deleteProduct(productId);
+    },
+    onSuccess: async () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast.success('Product deleted successfully!');
+      setDeleteDialogOpen(false);
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to delete product');
+    }
+  });
 
   // Get all unique categories
   const categories = useMemo(() => {
@@ -32,7 +56,7 @@ const ProductsTable: React.FC<DataTableProps<Product>> = ({ data }) => {
         product.brand?.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesCategory = !selectedCategory || product.category === selectedCategory;
-      
+
       const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
 
       return matchesSearch && matchesCategory && matchesPrice;
@@ -80,8 +104,8 @@ const ProductsTable: React.FC<DataTableProps<Product>> = ({ data }) => {
                 All Categories
               </DropdownMenuItem>
               {categories.map(category => (
-                <DropdownMenuItem 
-                  key={category} 
+                <DropdownMenuItem
+                  key={category}
                   onClick={() => setSelectedCategory(category)}
                 >
                   {category}
@@ -119,8 +143,8 @@ const ProductsTable: React.FC<DataTableProps<Product>> = ({ data }) => {
           </TableHeader>
           <TableBody>
             {filteredProducts.map((product) => (
-              <TableRow 
-                key={product._id} 
+              <TableRow
+                key={product._id}
                 className="hover:bg-gray-50/50 hover:cursor-pointer"
                 onClick={() => setSelectedProduct(product)}
               >
@@ -176,26 +200,41 @@ const ProductsTable: React.FC<DataTableProps<Product>> = ({ data }) => {
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                        }}
+                      >
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedProduct(product);
-                      }}>
+                      <DropdownMenuItem 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedProduct(product);
+                        }}
+                      >
                         View Details
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
-                        Duplicate
-                      </DropdownMenuItem>
                       <DropdownMenuItem 
-                        className="text-red-600" 
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setProductToEdit(product);
+                          setEditDialogOpen(true);
+                        }}
+                      >
+                        Edit
+                      </DropdownMenuItem> 
+                      <DropdownMenuItem
+                        className="text-red-600"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setProductToDelete(product._id);
+                          setDeleteDialogOpen(true);
+                        }}
                       >
                         Delete
                       </DropdownMenuItem>
@@ -208,13 +247,63 @@ const ProductsTable: React.FC<DataTableProps<Product>> = ({ data }) => {
         </Table>
       </div>
 
+      {/* Update Product Form */}
+      {productToEdit && (
+      <UpdateProductForm
+      open={editDialogOpen}
+      onClose={() => {
+        setEditDialogOpen(false);
+        setProductToEdit(null);
+      }}
+      product={productToEdit}
+      onSubmit={async (productId, data) => {
+        try {
+          const formDataObj = Object.fromEntries(data.entries());
+          await productService.updateProduct(productId, formDataObj as Partial<CreateProductDto>);
+          queryClient.invalidateQueries({ queryKey: ['products'] });
+          toast.success('Product updated successfully!');
+        } catch (error:any) {
+          toast.error(error.message || 'Failed to update product');
+        }
+      }}
+    />
+      )}
+
       {/* Product Details Modal */}
       {selectedProduct && (
-        <ProductDetailsModal 
-          product={selectedProduct} 
-          onClose={() => setSelectedProduct(null)} 
+        <ProductDetailsModal
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the product.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (productToDelete) {
+                  deleteProductMutation.mutate(productToDelete);
+                }
+              }}
+              disabled={deleteProductMutation.isPending}
+            >
+              {deleteProductMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : null}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

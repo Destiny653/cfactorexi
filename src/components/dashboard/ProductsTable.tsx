@@ -27,8 +27,8 @@ const ProductsTable: React.FC<DataTableProps<Product>> = ({ data }) => {
   // Filter products based on search term, category, and price range
   const filteredProducts = useMemo(() => {
     return data.filter(product => {
-      const matchesSearch = product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      const matchesSearch = product?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.brand?.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesCategory = !selectedCategory || product.category === selectedCategory;
@@ -120,7 +120,7 @@ const ProductsTable: React.FC<DataTableProps<Product>> = ({ data }) => {
           <TableBody>
             {filteredProducts.map((product) => (
               <TableRow 
-                key={product.id} 
+                key={product._id} 
                 className="hover:bg-gray-50/50 hover:cursor-pointer"
                 onClick={() => setSelectedProduct(product)}
               >

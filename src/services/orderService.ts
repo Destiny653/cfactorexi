@@ -5,12 +5,12 @@ export const orderService = {
     async getAllOrders(): Promise<Order[]> {
         try {
             const response = await api.get('/carts');
-            const carts = response.data.carts || response.data || [];
+            const carts = await response.data.carts || await response.data || [];
 
             return carts.map((cart: any) => ({
                 id: cart.id || 0,
                 products: (cart.products || []).map((product: any) => ({
-                    id: product.id || 0,
+                    _id: product._id || 0,
                     title: product.title || 'Unknown Product',
                     price: product.price || 0,
                     quantity: product.quantity || 1,
@@ -44,7 +44,7 @@ export const orderService = {
             const cart = response.data;
 
             return {
-                id: cart.id,
+                _id: cart._id,
                 products: cart.products.map((product: any) => ({
                     id: product.id,
                     title: product.title,

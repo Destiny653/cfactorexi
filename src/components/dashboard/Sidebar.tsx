@@ -31,6 +31,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedView, setSelectedView, mobile
             {/* Navigation */}
             <nav className="flex-grow overflow-y-auto py-2 px-3">
                 {sidebarItems.map(({ icon: Icon, label, view }) => (
+                    
                     <button
                         key={view}
                         className={`w-full flex items-center px-3 py-2 rounded-md transition-colors mb-1 text-sm ${

@@ -3,8 +3,8 @@ import { Plus, Search, ChevronLeft, ChevronRight, Menu, Loader2 } from 'lucide-r
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Sheet, SheetTrigger } from "../components/ui/sheet";
-import { productService } from '../services/productService';
-import { postService } from '../services/postService'; 
+import { CreateProductDto, productService } from '../services/productService';
+import { postService } from '../services/postService';
 import Sidebar from '../components/dashboard/Sidebar';
 import DashboardStats from '../components/dashboard/DashboardStats';
 import ProductsTable from '../components/dashboard/ProductsTable';
@@ -15,7 +15,14 @@ import { userService } from '../services/userService';
 import { orderService } from '../services/orderService';
 import UsersTable from '../components/dashboard/UsersTable';
 import OrdersTable from '../components/dashboard/OrdersTable';
-import { Product, Post, Comment, User, Order } from '../types/dashboardTypes';
+import { Product, Post, Comment, User, Order, PostFormData } from '../types/dashboardTypes';
+import { toast } from 'sonner';
+
+interface AddProductFormProps {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (formData: CreateProductDto) => Promise<void>;
+}
 
 const Dashboard: React.FC = () => {
   const [selectedView, setSelectedView] = useState<string>('dashboard');
@@ -33,7 +40,7 @@ const Dashboard: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      let result: Product[] | Post[] | Comment[] | User[] | Order[] = [];
+      let result: Product[] | Post[] | Comment[] | User[] | Order[] | any = [];
       if (selectedView === 'products') {
         result = await productService.getAllProducts();
       } else if (selectedView === 'posts') {
@@ -42,7 +49,6 @@ const Dashboard: React.FC = () => {
         result = await userService.getAllUsers();
       } else if (selectedView === 'orders') {
         result = await orderService.getAllOrders();
-        console.log("Result: ", result);
       }
       setData(result);
     } catch (error) {
@@ -54,27 +60,32 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleAddProduct = async () => {
+  const handleAddProduct = async (formData: FormData) => {
     try {
-      // Replace with your actual API call
-      // await productService.createProduct(productData);
+      await productService.createProduct(formData);
       fetchData(); // Refresh the data
+      setProductFormOpen(false);
+      toast.success('Product created successfully!');
     } catch (error) {
       console.error('Failed to add product', error);
+      toast.error('Failed to create product. Please try again.');
     }
   };
 
-  const handleAddPost = async () => {
+  const handleAddPost = async (postData: PostFormData) => {
     try {
-      // Replace with your actual API call
-      // await postService.createPost(postData);
+      await postService.createPost({
+        ...postData,
+        userId: 1, // You should get this from your auth context
+      });
       fetchData(); // Refresh the data
+      setPostFormOpen(false);
+      toast.success('Post created successfully!');
     } catch (error) {
       console.error('Failed to add post', error);
+      toast.error('Failed to create post. Please try again.');
     }
   };
-
-
   useEffect(() => {
     if (['products', 'posts', 'orders', 'users'].includes(selectedView)) {
       fetchData();
@@ -99,22 +110,21 @@ const Dashboard: React.FC = () => {
         return (
           post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
           post.body.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          post.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+          (post.tags && post.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())))
         );
       } else if (selectedView === 'users') {
         const user = item as User;
         return (
-          user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.username.toLowerCase().includes(searchTerm.toLowerCase())
+          user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.username?.toLowerCase().includes(searchTerm.toLowerCase())
         );
       } else if (selectedView === 'orders') {
         const order = item as Order;
         return (
-          order.id.toString().includes(searchTerm) ||
-          order.userId.toString().includes(searchTerm) ||
-          order.products.some(p => p.title.toLowerCase().includes(searchTerm.toLowerCase()))
+          order._id?.toString().includes(searchTerm) ||
+          (order.products && order.products.some(p => p.title.toLowerCase().includes(searchTerm.toLowerCase())))
         );
       }
       return true;
@@ -152,7 +162,7 @@ const Dashboard: React.FC = () => {
             </SheetTrigger>
           </Sheet>
           <h1 className="text-xl font-bold ml-2 capitalize">{selectedView}</h1>
-          <div className="w-8"></div> {/* Spacer for alignment */}
+          <div className="w-8"></div>
         </div>
 
         <AddProductForm
@@ -166,9 +176,6 @@ const Dashboard: React.FC = () => {
           onClose={() => setPostFormOpen(false)}
           onSubmit={handleAddPost}
         />
-
-        {/* comments */}
-
         {selectedView === 'dashboard' ? (
           <DashboardStats />
         ) : (

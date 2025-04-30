@@ -1,7 +1,7 @@
 import { api } from './api';
 
 export interface Comment {
-  id: number;
+  _id: number;
   body: string;
   postId: number;
   user: {
@@ -14,7 +14,7 @@ export const commentService = {
   async getAllComments() {
     try {
       const response = await api.get('/comments');
-      return await response.data.comments;
+      return await response.data;
     } catch (error) {
       console.error('Error fetching comments:', error);
       throw error;

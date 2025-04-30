@@ -40,7 +40,7 @@ const OrdersTable: React.FC<DataTableProps<Order>> = ({ data }) => {
       // Ensure products array exists and has minimum required fields
       products: (order.products || []).map(product => ({
         ...product,
-        id: product.id || Math.random().toString(36).substring(2, 9),
+        id: product._id || Math.random().toString(36).substring(2, 9),
         title: product.title || 'Unknown Product',
         thumbnail: product.thumbnail || ''
       })),
@@ -71,14 +71,14 @@ const OrdersTable: React.FC<DataTableProps<Order>> = ({ data }) => {
         </TableHeader>
         <TableBody>
           {safeOrders.map((order) => (
-            <TableRow key={order.id} className="hover:bg-gray-50/50">
-              <TableCell className="font-medium">#{order.id}</TableCell>
+            <TableRow key={order._id} className="hover:bg-gray-50/50">
+              <TableCell className="font-medium">#{order._id}</TableCell>
               <TableCell>User #{order.userId || 'N/A'}</TableCell>
               <TableCell>
                 <div className="flex items-center">
                   <div className="flex -space-x-2">
                     {order.products.slice(0, 3).map((product) => (
-                      <Avatar key={product.id} className="h-8 w-8 border-2 border-white">
+                      <Avatar key={product._id} className="h-8 w-8 border-2 border-white">
                         <AvatarImage src={product.thumbnail} alt={product.title} />
                         <AvatarFallback>
                           {(product.title || 'P').charAt(0).toUpperCase()}

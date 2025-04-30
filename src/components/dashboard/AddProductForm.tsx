@@ -1,274 +1,383 @@
-import React, { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import React, { useState, useRef } from 'react'; 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Loader2, X, Image as ImageIcon } from 'lucide-react';
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { ProductFormData } from '../../types/dashboardTypes';
+import { Badge } from "../ui/badge";
+import { toast } from 'sonner';
 
 interface AddProductFormProps {
-    open: boolean;
-    onClose: () => void;
-    onSubmit: (data: ProductFormData & { image?: File }) => Promise<void>;
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (formData: FormData) => Promise<void>;
 }
 
 const AddProductForm: React.FC<AddProductFormProps> = ({ open, onClose, onSubmit }) => {
-    const [formData, setFormData] = useState<ProductFormData>({
-        title: '',
-        description: '',
-        price: 0,
-        stock: 0,
-        category: '',
-        brand: ''
+  const queryClient = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    price: 0,
+    category: '',
+    tags: [] as string[],
+    published: true,
+  });
+  
+  const [files, setFiles] = useState<{
+    thumbnail?: File;
+    images: File[];
+  }>({ images: [] });
+  
+  const [tagInput, setTagInput] = useState('');
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: name === 'price' ? parseFloat(value) || 0 : value
+    }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    
+    const newFiles = Array.from(e.target.files);
+    const newThumbnail = files.thumbnail || newFiles[0];
+    const remainingImages = newFiles.slice(files.thumbnail ? 0 : 1);
+    
+    setFiles({
+      thumbnail: newThumbnail,
+      images: [...files.images, ...remainingImages]
     });
-    const [imageFile, setImageFile] = useState<File | null>(null);
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
+    
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: name === 'price' || name === 'stock' ? parseFloat(value) || 0 : value
-        }));
-    };
+  const removeFile = (index: number, isThumbnail: boolean = false) => {
+    if (isThumbnail) {
+      setFiles(prev => ({ ...prev, thumbnail: undefined }));
+    } else {
+      setFiles(prev => ({
+        ...prev,
+        images: prev.images.filter((_, i) => i !== index)
+      }));
+    }
+  };
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            setImageFile(file);
+  const setAsThumbnail = (file: File) => {
+    setFiles(prev => ({
+      thumbnail: file,
+      images: prev.images.filter(f => f !== file).concat(prev.thumbnail ? [prev.thumbnail] : [])
+    }));
+  };
 
-            // Create preview
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
+  const handleAddTag = () => {
+    if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        tags: [...prev.tags, tagInput.trim()]
+      }));
+      setTagInput('');
+    }
+  };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        try {
-            await onSubmit({
-                ...formData,
-                image: imageFile || undefined
-            });
-            onClose();
-            // Reset form after successful submission
-            setFormData({
-                title: '',
-                description: '',
-                price: 0,
-                stock: 0,
-                category: '',
-                brand: ''
-            });
-            setImageFile(null);
-            setImagePreview(null);
-        } finally {
-            setLoading(false);
-        }
-    };
+  const handleRemoveTag = (tagToRemove: string) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.filter(tag => tag !== tagToRemove)
+    }));
+  };
 
-    if (!open) return null;
+  const createProductMutation = useMutation({
+    mutationFn: async () => {
+      const formDataToSend = new FormData();
+      
+      // Append product data
+      formDataToSend.append('title', formData.title);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('price', formData.price.toString());
+      formDataToSend.append('category', formData.category);
+      formDataToSend.append('published', formData.published.toString());
+      formData.tags.forEach(tag => {
+        formDataToSend.append('tags[]', tag);
+      });
+      
+      // Append files
+      if (files.thumbnail) {
+        formDataToSend.append('thumbnail', files.thumbnail);
+      }
+      files.images.forEach(image => {
+        formDataToSend.append('images', image);
+      });
+      
+      await onSubmit(formDataToSend);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      onClose();
+      resetForm();
+      toast.success('Product created successfully!');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to create product');
+    }
+  });
 
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl min-w-[600px]">
-                <div className="p-8">
-                    <h3 className="text-xl font-semibold leading-6 text-gray-900 mb-6">Add New Product</h3>
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-4">
-                                <div>
-                                    <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-                                        Product Title*
-                                    </label>
-                                    <Input
-                                        type="text"
-                                        name="title"
-                                        id="title"
-                                        required
-                                        value={formData.title}
-                                        onChange={handleChange}
-                                        className="w-full"
-                                    />
-                                </div>
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      description: '',
+      price: 0,
+      category: '',
+      tags: [],
+      published: true,
+    });
+    setFiles({ images: [] });
+    setTagInput('');
+  };
 
-                                <div>
-                                    <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                                        Description*
-                                    </label>
-                                    <textarea
-                                        name="description"
-                                        id="description"
-                                        rows={4}
-                                        required
-                                        value={formData.description}
-                                        onChange={handleChange}
-                                        className="mt-1 block w-full rounded-md border border-input shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2 min-h-[120px]"
-                                    />
-                                </div>
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    createProductMutation.mutate();
+  };
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
-                                            Price*
-                                        </label>
-                                        <Input
-                                            type="number"
-                                            name="price"
-                                            id="price"
-                                            min="0"
-                                            step="0.01"
-                                            required
-                                            value={formData.price}
-                                            onChange={handleChange}
-                                            className="w-full"
-                                        />
-                                    </div>
+  if (!open) return null;
 
-                                    <div>
-                                        <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-1">
-                                            Stock*
-                                        </label>
-                                        <Input
-                                            type="number"
-                                            name="stock"
-                                            id="stock"
-                                            min="0"
-                                            required
-                                            value={formData.stock}
-                                            onChange={handleChange}
-                                            className="w-full"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl">
+        <div className="p-6">
+          <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Add New Product</h3>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+                  Product Title
+                </label>
+                <Input
+                  type="text"
+                  name="title"
+                  id="title"
+                  required
+                  value={formData.title}
+                  onChange={handleChange}
+                />
+              </div>
 
-                            <div className="space-y-4">
-                                <div>
-                                    <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-1">
-                                        Product Image
-                                    </label>
-                                    <div className="mt-1 flex flex-col items-center">
-                                        {imagePreview ? (
-                                            <>
-                                                <div className="relative w-full h-48 rounded-md overflow-hidden border border-gray-300 mb-2">
-                                                    <img
-                                                        src={imagePreview}
-                                                        alt="Preview"
-                                                        className="w-full h-full object-contain"
-                                                    />
-                                                </div>
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => {
-                                                        setImageFile(null);
-                                                        setImagePreview(null);
-                                                    }}
-                                                >
-                                                    Remove Image
-                                                </Button>
-                                            </>
-                                        ) : (
-                                            <div className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-md bg-gray-50">
-                                                <div className="flex items-center justify-center text-gray-400 mb-2">
-                                                    <svg
-                                                        className="h-12 w-12"
-                                                        stroke="currentColor"
-                                                        fill="none"
-                                                        viewBox="0 0 48 48"
-                                                        aria-hidden="true"
-                                                    >
-                                                        <path
-                                                            d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                                                            strokeWidth={2}
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                        />
-                                                    </svg>
-                                                </div>
-                                                <div className="flex text-sm text-gray-600">
-                                                    <label
-                                                        htmlFor="file-upload"
-                                                        className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none"
-                                                    >
-                                                        <span>Upload an image</span>
-                                                        <input
-                                                            id="file-upload"
-                                                            name="file-upload"
-                                                            type="file"
-                                                            accept="image/*"
-                                                            className="sr-only"
-                                                            onChange={handleImageChange}
-                                                        />
-                                                    </label>
-                                                    <p className="pl-1">or drag and drop</p>
-                                                </div>
-                                                <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF up to 5MB</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
+              <div>
+                <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
+                  Price
+                </label>
+                <Input
+                  type="number"
+                  name="price"
+                  id="price"
+                  min="0"
+                  step="0.01"
+                  required
+                  value={formData.price}
+                  onChange={handleChange}
+                />
+              </div>
 
-                                <div>
-                                    <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
-                                        Category*
-                                    </label>
-                                    <Input
-                                        type="text"
-                                        name="category"
-                                        id="category"
-                                        required
-                                        value={formData.category}
-                                        onChange={handleChange}
-                                        className="w-full"
-                                    />
-                                </div>
+              <div>
+                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+                  Category
+                </label>
+                <Input
+                  type="text"
+                  name="category"
+                  id="category"
+                  required
+                  value={formData.category}
+                  onChange={handleChange}
+                />
+              </div>
 
-                                <div>
-                                    <label htmlFor="brand" className="block text-sm font-medium text-gray-700 mb-1">
-                                        Brand (Optional)
-                                    </label>
-                                    <Input
-                                        type="text"
-                                        name="brand"
-                                        id="brand"
-                                        value={formData.brand || ''}
-                                        onChange={handleChange}
-                                        className="w-full"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="flex justify-end gap-4 pt-4 border-t border-gray-200">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={onClose}
-                                disabled={loading}
-                                className="px-6"
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                type="submit"
-                                disabled={loading}
-                                className="px-6"
-                            >
-                                {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                                Add Product
-                            </Button>
-                        </div>
-                    </form>
-                </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="published"
+                  name="published"
+                  checked={formData.published}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    published: e.target.checked
+                  }))}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label htmlFor="published" className="ml-2 block text-sm text-gray-700">
+                  Publish immediately
+                </label>
+              </div>
             </div>
+
+            <div>
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                Description
+              </label>
+              <textarea
+                name="description"
+                id="description"
+                rows={3}
+                required
+                value={formData.description}
+                onChange={handleChange}
+                className="block w-full rounded-md border border-input shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Product Images
+              </label>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <ImageIcon className="h-4 w-4 mr-2" />
+                    Upload Images
+                  </Button>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                  />
+                  <span className="text-sm text-gray-500">
+                    {files.thumbnail || files.images.length > 0 
+                      ? `${files.thumbnail ? 1 : 0} thumbnail, ${files.images.length} images` 
+                      : 'No images selected'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  {files.thumbnail && (
+                    <div className="relative group border rounded-md overflow-hidden">
+                      <img
+                        src={URL.createObjectURL(files.thumbnail)}
+                        alt="Thumbnail preview"
+                        className="w-full h-32 object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all flex items-center justify-center">
+                        <span className="absolute top-1 left-1 bg-blue-500 text-white text-xs px-1 rounded">
+                          Thumbnail
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="opacity-0 group-hover:opacity-100 h-8 w-8 rounded-full bg-red-500 hover:bg-red-600 text-white"
+                          onClick={() => removeFile(0, true)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {files.images.map((file, index) => (
+                    <div key={index} className="relative group border rounded-md overflow-hidden">
+                      <img
+                        src={URL.createObjectURL(file)}
+                        alt={`Product image ${index + 1}`}
+                        className="w-full h-32 object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all flex items-center justify-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="opacity-0 group-hover:opacity-100 h-8 w-8 rounded-full bg-blue-500 hover:bg-blue-600 text-white"
+                          onClick={() => setAsThumbnail(file)}
+                          title="Set as thumbnail"
+                        >
+                          <ImageIcon className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="opacity-0 group-hover:opacity-100 h-8 w-8 rounded-full bg-red-500 hover:bg-red-600 text-white"
+                          onClick={() => removeFile(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-1">
+                Tags
+              </label>
+              <div className="flex flex-col gap-2">
+                <div className="flex gap-2">
+                  <Input
+                    type="text"
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+                    placeholder="Add tag and press Enter"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleAddTag}
+                  >
+                    Add
+                  </Button>
+                </div>
+                {formData.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {formData.tags.map(tag => (
+                      <Badge key={tag} className="flex items-center gap-1">
+                        {tag}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveTag(tag)}
+                          className="text-gray-400 hover:text-gray-600"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                disabled={createProductMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={createProductMutation.isPending}
+              >
+                {createProductMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Create Product
+              </Button>
+            </div>
+          </form>
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
 export default AddProductForm;

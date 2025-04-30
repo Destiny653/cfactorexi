@@ -2,6 +2,8 @@ import { ComponentType } from 'react';
 
 // Form interfaces
 export interface ProductFormData {
+  published: boolean | undefined;
+  tags: any;
   title: string;
   description: string;
   price: number;
@@ -20,7 +22,7 @@ export interface PostFormData {
 
 // Type Definitions
 export interface User {
-  id: string;
+  _id: string;
   username: string;
   email: string;
   avatar: string | undefined;
@@ -28,7 +30,7 @@ export interface User {
 }
 
 export interface User {
-  id: string;
+  _id: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -56,7 +58,7 @@ export interface Review {
 
  
 export interface Product {
-  id: string;
+  _id: string;
   title: string;
   description: string;
   price: number;
@@ -90,12 +92,12 @@ export interface Product {
 }
 
 export interface Comment {
-  id: string;
+  _id: string;
   body: string;
   postId: string;
   likes?: number;
   user: {
-    id: string;
+    _id: string;
     username: string;
     fullName: string;
     avatar?: string;
@@ -105,7 +107,7 @@ export interface Comment {
 }
 
 export interface Post {
-  id: string;
+  _id: string;
   title: string;
   body: string;
   date: string;
@@ -161,9 +163,9 @@ export interface Statistics {
 }
 
 export interface Order {
-  id: number;
+  _id: number;
   products: {
-    id: number;
+    _id: number;
     title: string;
     price: number;
     quantity: number;

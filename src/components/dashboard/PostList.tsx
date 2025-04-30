@@ -29,7 +29,7 @@ function PostList() {
       <h2>Posts</h2>
       <div className="posts-grid">
         {posts.map((post) => (
-          <div key={post.id} className="post-card">
+          <div key={post._id} className="post-card">
             <h3>{post.title}</h3>
             <p>{post.body}</p>
             <div className="post-tags">

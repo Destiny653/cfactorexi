@@ -4,14 +4,14 @@ import { Product } from '../../types/dashboardTypes';
 import { productService } from '../../services/productService';
 
 const RecentProducts: React.FC = () => {
-    const [products, setProducts] = useState<Product[]>([]);
+    const [products, setProducts] = useState<Product[] | any>([]);
     const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
         const fetchProducts = async () => {
             try {
                 const result = await productService.getAllProducts();
-                setProducts(result.slice(0, 5));
+                setProducts(result?.slice(0, 5));
             } catch (error) {
                 console.error('Failed to fetch products', error);
             } finally {
@@ -31,8 +31,8 @@ const RecentProducts: React.FC = () => {
 
     return (
         <div className="space-y-4">
-            {products.map((product) => (
-                <div key={product.id} className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+            {products.map((product:any) => (
+                <div key={product._id} className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
                     <div className="w-10 h-10 rounded-md overflow-hidden border">
                         <img
                             src={product.thumbnail || 'https://via.placeholder.com/80'}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { Key, useState } from 'react';
 import { FileText, Plus, ThumbsUp, ThumbsDown, MoreVertical, Tag, MessageCircle, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { Button } from "../ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
@@ -11,6 +11,7 @@ import { cn } from '../../lib/utils';
 import { commentService } from '../../services/commentService';
 
 interface EnhancedPost extends Post {
+  _id: any; 
   showComments?: boolean;
   commentsLoading?: boolean;
 }
@@ -25,27 +26,27 @@ const PostsTable: React.FC<DataTableProps<Post>> = ({ data }) => {
 
   const fetchComments = async (postId: string) => {
     setPosts(prev => prev.map(post => 
-      post.id === postId ? { ...post, commentsLoading: true } : post
+      post._id === postId ? { ...post, commentsLoading: true } : post
     ));
 
     try {
       const comments = await commentService.getCommentsByPostId(Number(postId));
       setPosts(prev => prev.map(post => 
-        post.id === postId 
+        post._id === postId 
           ? { ...post, comments, commentsLoading: false }
           : post
       ));
     } catch (error) {
       console.error('Failed to fetch comments:', error);
       setPosts(prev => prev.map(post => 
-        post.id === postId ? { ...post, commentsLoading: false } : post
+        post._id === postId ? { ...post, commentsLoading: false } : post
       ));
     }
   };
 
   const toggleComments = (postId: string) => {
     setPosts(prev => {
-      const post = prev.find(p => p.id === postId);
+      const post = prev.find(p => p._id === postId);
       if (!post) return prev;
 
       // Fetch comments if not already loaded
@@ -54,7 +55,7 @@ const PostsTable: React.FC<DataTableProps<Post>> = ({ data }) => {
       }
 
       return prev.map(p => 
-        p.id === postId ? { ...p, showComments: !p.showComments } : p
+        p._id === postId ? { ...p, showComments: !p.showComments } : p
       );
     });
   };
@@ -90,7 +91,7 @@ const PostsTable: React.FC<DataTableProps<Post>> = ({ data }) => {
           </TableHeader>
           <TableBody>
             {posts.map((post) => (
-              <React.Fragment key={post.id}>
+              <React.Fragment key={post._id}>
                 <TableRow className="hover:bg-gray-50/50">
                   <TableCell className="font-medium">
                     <div className="line-clamp-1">{post.title}</div>
@@ -152,7 +153,7 @@ const PostsTable: React.FC<DataTableProps<Post>> = ({ data }) => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => toggleComments(post.id)}
+                        onClick={() => toggleComments(post._id)}
                         className="h-8 w-8"
                       >
                         {post.commentsLoading ? (
@@ -201,7 +202,7 @@ const PostsTable: React.FC<DataTableProps<Post>> = ({ data }) => {
                         ) : post.comments?.length ? (
                           <div className="space-y-4">
                             {post.comments.map(comment => (
-                              <div key={comment.id} className="flex gap-3">
+                              <div key={comment._id} className="flex gap-3">
                                 <Avatar className="h-8 w-8">
                                   <AvatarImage src={comment.user?.avatar} />
                                   <AvatarFallback>

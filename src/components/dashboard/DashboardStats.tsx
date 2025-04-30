@@ -62,15 +62,16 @@ const DashboardStats: React.FC = () => {
                     productService.getAllProducts(),
                     postService.getAllPosts(),
                     commentService.getAllComments()
-                ]);
+                ]); 
+                
                 setStatistics({
-                    totalProducts: products.length,
-                    totalPosts: posts.length,
-                    totalComments: comments.length,
+                    totalProducts: products?.length,
+                    totalPosts: posts?.length,
+                    totalComments: comments?.length,
                     totalUsers: 42, // Mock data
-                    productRevenue: products.reduce((sum: number, p: any) => sum + (p.price || 0), 0),
-                    viewRate: posts.length * 10,
-                    engagementRate: comments.length / (posts.length || 1) * 100,
+                    productRevenue: products?.reduce((sum: number, p: any) => sum + (p.price || 0), 0),
+                    viewRate: posts?.length * 10,
+                    engagementRate: comments?.length / (posts?.length || 1) * 100,
                     monthlyGrowth: 12.5,
                     weeklySales: 24
                 });

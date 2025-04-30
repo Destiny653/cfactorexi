@@ -29,7 +29,7 @@ const ProductList: React.FC = () => {
       <h2>Product List</h2>
       <div className="product-grid">
         {products.map((product) => (
-          <div key={product.id} className="product-card">
+          <div key={product._id} className="product-card">
             <img 
               src={product.thumbnail} 
               alt={product.title} 

@@ -6,14 +6,14 @@ import { Input } from "../ui/input";
 import { Badge } from "../ui/badge";
 import { toast } from 'sonner';
 import { PostFormData } from '../../types/dashboardTypes';
-import { API_URL } from '../../helper/url';
 
 interface AddPostFormProps {
     open: boolean;
     onClose: () => void;
+    onSubmit: (postData: PostFormData) => Promise<void>; // Add this line
 }
 
-const AddPostForm: React.FC<AddPostFormProps> = ({ open, onClose }) => {
+const AddPostForm: React.FC<AddPostFormProps> = ({ open, onClose, onSubmit }) => {
     const queryClient = useQueryClient();
     const [formData, setFormData] = useState<PostFormData>({
         title: '',
@@ -24,22 +24,7 @@ const AddPostForm: React.FC<AddPostFormProps> = ({ open, onClose }) => {
     const [tagInput, setTagInput] = useState('');
 
     const createPostMutation = useMutation({
-        mutationFn: async (postData: PostFormData) => {
-            const response = await fetch(`${API_URL}/posts`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(postData),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to create post');
-            }
-
-            return response.json();
-        },
+        mutationFn: onSubmit, // Use the passed onSubmit function
         onSuccess: () => {
             toast.success('Post created successfully!');
             queryClient.invalidateQueries({ queryKey: ['posts'] });
@@ -55,7 +40,6 @@ const AddPostForm: React.FC<AddPostFormProps> = ({ open, onClose }) => {
             toast.error(`Error: ${error.message}`);
         }
     });
-
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({

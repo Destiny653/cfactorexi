@@ -3,7 +3,7 @@ import { Plus, Search, ChevronLeft, ChevronRight, Menu, Loader2 } from 'lucide-r
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Sheet, SheetTrigger } from "../components/ui/sheet";
-import { CreateProductDto, productService } from '../services/productService';
+import { productService } from '../services/productService';
 import { postService } from '../services/postService';
 import Sidebar from '../components/dashboard/Sidebar';
 import DashboardStats from '../components/dashboard/DashboardStats';
@@ -16,13 +16,7 @@ import { orderService } from '../services/orderService';
 import UsersTable from '../components/dashboard/UsersTable';
 import OrdersTable from '../components/dashboard/OrdersTable';
 import { Product, Post, Comment, User, Order, PostFormData } from '../types/dashboardTypes';
-import { toast } from 'sonner';
-
-interface AddProductFormProps {
-  open: boolean;
-  onClose: () => void;
-  onSubmit: (formData: CreateProductDto) => Promise<void>;
-}
+import { toast } from 'sonner'; 
 
 const Dashboard: React.FC = () => {
   const [selectedView, setSelectedView] = useState<string>('dashboard');

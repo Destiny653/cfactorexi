@@ -13,7 +13,7 @@ const UsersTable: React.FC<DataTableProps<User>> = ({ data = [] }) => {
     const getSafeUsers = () => {
         return data.map(user => ({
             ...user,
-            id: user.id || Math.random().toString(36).substring(2, 9),
+            id: user._id || Math.random().toString(36).substring(2, 9),
             firstName: user.firstName || 'Unknown',
             lastName: user.lastName || 'User',
             username: user.username || `user${Math.floor(Math.random() * 1000)}`,

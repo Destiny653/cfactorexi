@@ -1,4 +1,4 @@
-import React, { Key, useState } from 'react';
+import React, {  useState } from 'react';
 import { FileText, Plus, ThumbsUp, ThumbsDown, MoreVertical, Tag, MessageCircle, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { Button } from "../ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";

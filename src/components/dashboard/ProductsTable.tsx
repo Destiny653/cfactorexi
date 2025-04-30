@@ -28,16 +28,30 @@ const ProductsTable: React.FC<DataTableProps<Product>> = ({ data }) => {
 
   // Delete product mutation
   const deleteProductMutation = useMutation({
-    mutationFn: async (productId: string) => {
-      await productService.deleteProduct(productId);
+    mutationFn: productService.deleteProduct,
+    onMutate: async (productId) => {
+      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+      await queryClient.cancelQueries({ queryKey: ['products'] });
+
+      // Snapshot the previous value
+      const previousProducts = queryClient.getQueryData<Product[]>(['products']);
+
+      // Optimistically update to the new value
+      queryClient.setQueryData(['products'], (old: Product[] | undefined) => 
+        old?.filter(product => product._id !== productId) || []
+      );
+
+      // Return a context object with the snapshotted value
+      return { previousProducts };
     },
-    onSuccess: async () => {
+    onError: (err, productId, context) => {
+      // Rollback to the previous value if mutation fails
+      queryClient.setQueryData(['products'], context?.previousProducts);
+      toast.error(`Failed to delete product: ${err.message}`);
+    },
+    onSettled: () => {
+      // Always refetch after error or success
       queryClient.invalidateQueries({ queryKey: ['products'] });
-      toast.success('Product deleted successfully!');
-      setDeleteDialogOpen(false);
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to delete product');
     }
   });
 

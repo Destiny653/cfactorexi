@@ -160,51 +160,99 @@ const UpdateProductForm: React.FC<UpdateProductFormProps> = ({
   };
 
   const updateProductMutation = useMutation({
-    mutationFn: async () => {
-      if (!product) return;
-      
-      const formDataToSend = new FormData();
-
-      // Append product data
-      formDataToSend.append('title', formData.title);
-      formDataToSend.append('description', formData.description);
-      formDataToSend.append('price', formData.price.toString());
-      formDataToSend.append('category', formData.category);
-      formDataToSend.append('published', formData.published.toString());
-      formDataToSend.append('stock', formData.stock.toString());
-      formData.tags.forEach(tag => {
-        formDataToSend.append('tags[]', tag);
-      });
-
-      // Append files
-      if (files.thumbnail) {
-        formDataToSend.append('thumbnail', files.thumbnail);
-      }
-      files.images.forEach(image => {
-        formDataToSend.append('images', image);
-      });
-
-      // Append existing images that should be kept
-      if (files.existingThumbnail) {
-        formDataToSend.append('existingThumbnail', files.existingThumbnail);
-      }
-      files.existingImages.forEach(image => {
-        formDataToSend.append('existingImages[]', image);
-      });
-
+    mutationFn: async (formDataToSend: FormData) => {
+      if (!product) throw new Error('No product selected');
       await onSubmit(product._id, formDataToSend);
     },
+    onMutate: async (formDataToSend) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['products'] });
+      
+      // Snapshot the previous value
+      const previousProducts = queryClient.getQueryData<Product[]>(['products']);
+  
+      // Optimistically update the product in cache
+      queryClient.setQueryData(['products'], (old: Product[] | undefined) => {
+        if (!old) return [];
+        
+        return old.map(p => {
+          if (p._id === product!._id) {
+            // Create optimistic update with form values
+            return {
+              ...p,
+              title: formDataToSend.get('title') as string || p.title,
+              description: formDataToSend.get('description') as string || p.description,
+              price: Number(formDataToSend.get('price')) || p.price,
+              category: formDataToSend.get('category') as string || p.category,
+              published: formDataToSend.get('published') === 'true',
+              stock: Number(formDataToSend.get('stock')) || p.stock,
+              tags: formDataToSend.getAll('tags[]') as string[] || p.tags,
+              // For files, we can't preview them, so we keep the existing ones optimistically
+              thumbnail: files.thumbnail ? 'optimistic-thumbnail.jpg' : p.thumbnail,
+              images: [
+                ...(files.images.length > 0 ? ['optimistic-image.jpg'] : []),
+                ...(files.existingImages || [])
+              ]
+            };
+          }
+          return p;
+        });
+      });
+  
+      return { previousProducts };
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast.success('Product updated successfully!');
       onClose();
       resetForm();
-      toast.success('Product updated successfully!');
     },
-    onError: (error: Error) => {
+    onError: (error: Error, _, context) => {
+      // Rollback to the previous value
+      if (context?.previousProducts) {
+        queryClient.setQueryData(['products'], context.previousProducts);
+      }
       toast.error(error.message || 'Failed to update product');
+    },
+    onSettled: () => {
+      // Always refetch after error or success to ensure consistency
+      queryClient.invalidateQueries({ queryKey: ['products'] });
     }
   });
-
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const formDataToSend = new FormData();
+  
+    // Append product data
+    formDataToSend.append('title', formData.title);
+    formDataToSend.append('description', formData.description);
+    formDataToSend.append('price', formData.price.toString());
+    formDataToSend.append('category', formData.category);
+    formDataToSend.append('published', formData.published.toString());
+    formDataToSend.append('stock', formData.stock.toString());
+    formData.tags.forEach(tag => {
+      formDataToSend.append('tags[]', tag);
+    });
+  
+    // Append files
+    if (files.thumbnail) {
+      formDataToSend.append('thumbnail', files.thumbnail);
+    }
+    files.images.forEach(image => {
+      formDataToSend.append('images', image);
+    });
+  
+    // Append existing images to keep
+    if (files.existingThumbnail) {
+      formDataToSend.append('existingThumbnail', files.existingThumbnail);
+    }
+    files.existingImages.forEach(image => {
+      formDataToSend.append('existingImages[]', image);
+    });
+  
+    updateProductMutation.mutate(formDataToSend);
+  };
   const resetForm = () => {
     setFormData({
       title: '',
@@ -219,10 +267,6 @@ const UpdateProductForm: React.FC<UpdateProductFormProps> = ({
     setTagInput('');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateProductMutation.mutate();
-  };
 
   if (!open || !product) return null;
 

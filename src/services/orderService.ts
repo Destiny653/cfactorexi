@@ -1,7 +1,60 @@
 import { api } from './api';
 import { Order } from '../types/dashboardTypes';
 
+interface OrderItem {
+    _id: string;
+    name: string;
+    price: number;
+    quantity: number;
+    thumbnail: string;
+    discountPercentage?: number;
+}
+
+interface CreateOrderResponse {
+    success: boolean;
+    order: {
+        _id: string;
+        user: string;
+        items: OrderItem[];
+        subtotal: number;
+        discountTotal: number;
+        total: number;
+        shippingAddress: {
+            address: string;
+            city: string;
+            postalCode: string;
+            country: string;
+        };
+        shippingMethod: string;
+        paymentMethod: string;
+        status: string;
+    };
+    paymentRedirect?: string;
+}
+
+
 export const orderService = {
+    async createOrder(orderData: {
+        userId: string;
+        items: OrderItem[];
+        shippingAddress: {
+            address: string;
+            city: string;
+            postalCode: string;
+            country: string;
+        };
+        shippingMethod: string;
+        paymentMethod: string;
+    }): Promise<CreateOrderResponse> {
+        try {
+            const response = await api.post('/orders', orderData);
+            return response.data;
+        } catch (error) {
+            console.error('Order creation failed:', error);
+            throw error;
+        }
+    },
+
     async getAllOrders(): Promise<Order[]> {
         try {
             const response = await api.get('/carts');

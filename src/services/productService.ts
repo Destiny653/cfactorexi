@@ -1,15 +1,27 @@
 import { api } from './api'; 
 
 export interface Product { 
-  _id: string;
+   _id: string;
   title: string;
   description: string;
   price: number;
-  thumbnail: string;
+  discountPercentage?: number;
   images: string[];
+  thumbnail: string;
+  availabilityStatus: string;
+  rating: number;
   category: string;
-  tags: string[];
-  published: boolean;
+  brand: string;
+  stock: number;
+  tags: string;
+  published:string;
+  sku: string;
+  reviews: {
+    reviewerName: string;
+    rating: number;
+    comment: string;
+    date: string;
+  }[];
 }
 
 export interface CreateProductDto {

@@ -45,6 +45,7 @@ const ProductsTable: React.FC<DataTableProps<Product>> = ({ data }) => {
       return { previousProducts };
     },
     onError: (err, productId, context) => {
+      console.log(productId)
       // Rollback to the previous value if mutation fails
       queryClient.setQueryData(['products'], context?.previousProducts);
       toast.error(`Failed to delete product: ${err.message}`);

@@ -21,7 +21,7 @@ interface Product {
 
 const HomePage = () => {
     const [products, setProducts] = useState<Product[]>([]);
-    const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]); 
+    const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
     console.log(products)
 
     useEffect(() => {
@@ -61,11 +61,11 @@ const HomePage = () => {
     ];
 
     const brandLogos = [
-        'https://via.placeholder.com/150x80?text=Brand+1',
-        'https://via.placeholder.com/150x80?text=Brand+2',
-        'https://via.placeholder.com/150x80?text=Brand+3',
-        'https://via.placeholder.com/150x80?text=Brand+4',
-        'https://via.placeholder.com/150x80?text=Brand+5'
+        'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/NARS_Logo.svg/2560px-NARS_Logo.svg.png',
+        'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/MAC_Cosmetics_logo.svg/1200px-MAC_Cosmetics_logo.svg.png',
+        'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Estee_Lauder_logo.svg/2560px-Estee_Lauder_logo.svg.png',
+        'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Clinique_logo.svg/1200px-Clinique_logo.svg.png',
+        'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Charlotte_Tilbury_logo.svg/1200px-Charlotte_Tilbury_logo.svg.png'
     ];
 
     const beautyTips = [
@@ -158,7 +158,11 @@ const HomePage = () => {
                                 whileHover={{ scale: 1.05 }}
                                 className="opacity-70 hover:opacity-100 transition-opacity"
                             >
-                                <img src={logo} alt={`Brand ${index + 1}`} className="h-12 object-contain" />
+                                <img
+                                    src={logo}
+                                    alt={`Brand ${index + 1}`}
+                                    className="h-12 object-contain" 
+                                />
                             </motion.div>
                         ))}
                     </div>

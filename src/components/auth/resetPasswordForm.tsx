@@ -13,12 +13,12 @@ import {
   FormLabel,
   FormMessage,
 } from '../../components/ui/form';
-import { Input } from '../../components/ui/input';
-import { toast } from 'sonner';
+import { Input } from '../../components/ui/input'; 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Icons } from '../../components/icons';
 import { API_URL } from '../../helper/url';
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 const resetPasswordSchema = z.object({
   newPassword: z.string().min(6, 'Password must be at least 6 characters'),

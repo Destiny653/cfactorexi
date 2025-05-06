@@ -6,12 +6,12 @@ import * as z from 'zod';
 import { useMutation } from '@tanstack/react-query';
 import { Button } from '../../components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '../../components/ui/form';
-import { Input } from '../../components/ui/input';
-import { toast } from 'sonner';
-import {Link, useNavigate}from 'react-router-dom';
+import { Input } from '../../components/ui/input'; 
+import {Link}from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Icons } from '../../components/icons';
 import { API_URL } from '../../helper/url';
+import toast from 'react-hot-toast';
 
 
 const forgotPasswordSchema = z.object({
@@ -28,7 +28,7 @@ export default function ForgotPasswordForm() {
     },
   });
   
-  const router = useNavigate(); 
+  // const router = useNavigate(); 
 
     const { mutate: sendResetEmail, isPending } = useMutation({
       mutationFn: async (data: ForgotPasswordFormValues) => {
@@ -60,17 +60,7 @@ export default function ForgotPasswordForm() {
           duration: 5000,
           position: 'top-center'
         });
-        form.reset();
-        
-        if (data && !data.isVerified && data.token) {
-          router('/reset-password?token=' + data.token);
-        }else{
-          toast.error('Failed to send reset email. Please try again.', {
-            duration: 5000,
-            position: 'top-center'
-          });
-          form.reset(); 
-        }
+        form.reset(); 
       },
       onError: (error) => {
         console.error("Mutation error:", error);

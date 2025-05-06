@@ -39,6 +39,7 @@ const CheckoutPage = () => {
   const [step, setStep] = useState(1);
   const [paymentRedirect, setPaymentRedirect] = useState<string | null>(null);
   console.log('Payment Redirect:', paymentRedirect);
+  console.log("User from checkout: ",user)
   
   const [formData, setFormData] = useState<FormData>({
 

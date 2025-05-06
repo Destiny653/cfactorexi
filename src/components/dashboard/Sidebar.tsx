@@ -25,7 +25,9 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedView, setSelectedView, mobile
                 <div className="bg-white text-blue-600 p-1.5 rounded-lg mr-2">
                     <Activity size={18} />
                 </div>
+            <a href="/">
                 <h2 className="text-lg font-bold">AdminPro</h2>
+            </a>
             </div>
             
             {/* Navigation */}

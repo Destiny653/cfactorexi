@@ -1,5 +1,6 @@
 import axios from 'axios';
-import { API_URL } from '../helper/url';
+import { API_URL } from '../helper/url'; 
+import toast from 'react-hot-toast';
 
 interface User {
   id: number;
@@ -10,7 +11,7 @@ interface User {
   token: string;
 }
 
-export const login = async (username: string, password: string): Promise<User> => {
+export const login = async (username: string, password: string): Promise<User | any> => {
   try {
     const response = await axios.post(API_URL+'/auth/login', {
       username: username,
@@ -18,6 +19,12 @@ export const login = async (username: string, password: string): Promise<User> =
       expiresInMins: 60, // optional, defaults to 60
     });
 
+    console.log("service res: ",response) 
+    if(response.data.error) {
+      toast.error(response.data.message)
+      return null
+    }
+     
     // The response includes user details and a token
     return {
       id: response.data.id,

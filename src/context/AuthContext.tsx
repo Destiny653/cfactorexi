@@ -13,7 +13,7 @@ interface User {
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: User | any;
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
@@ -27,9 +27,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
-  const loginUser = async (username: string, password: string): Promise<boolean> => {
+  const loginUser = async (email: string, password: string): Promise<boolean | any> => {
     try {
-      const userData = await login(username, password);
+      const userData = await login(email, password);
+      console.log("userData: ",userData)
       setUser(userData);
       saveUserData(userData); // Assuming this saves to localStorage
       return true;

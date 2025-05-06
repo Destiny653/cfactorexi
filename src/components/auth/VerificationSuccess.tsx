@@ -8,7 +8,7 @@ export default function VerificationSuccess() {
 
   useEffect(() => {
     // Auto-redirect after 5 seconds
-    const timer = setTimeout(() => navigate('/login'), 5000);
+    const timer = setTimeout(() => navigate('/login'), 8000);
     return () => clearTimeout(timer);
   }, [navigate]);
 

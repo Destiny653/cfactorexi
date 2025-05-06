@@ -54,8 +54,7 @@ export default function ForgotPasswordForm() {
         }
       },
     
-      onSuccess: (data) => {
-        console.log("Mutation success:", data);
+      onSuccess: () => { 
         toast.success('Password reset email sent. Please check your inbox.', {
           duration: 5000,
           position: 'top-center'

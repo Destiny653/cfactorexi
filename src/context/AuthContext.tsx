@@ -29,8 +29,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const loginUser = async (email: string, password: string): Promise<boolean | any> => {
     try {
-      const userData = await login(email, password);
-      console.log("userData: ",userData)
+      const userData = await login(email, password); 
       setUser(userData);
       saveUserData(userData); // Assuming this saves to localStorage
       return true;

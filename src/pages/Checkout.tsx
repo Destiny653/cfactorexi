@@ -40,6 +40,10 @@ const CheckoutPage = () => {
   const [paymentRedirect, setPaymentRedirect] = useState<string | null>(null);
   console.log('Payment Redirect:', paymentRedirect);
   console.log("User from checkout: ",user)
+
+  if(cart.length == 0){
+    navigate('/products')
+  }
   
   const [formData, setFormData] = useState<FormData>({
 
@@ -93,7 +97,8 @@ const CheckoutPage = () => {
     onSuccess: (data) => {
       if (data.paymentRedirect) {
         setPaymentRedirect(data.paymentRedirect);
-        window.location.href = data.paymentRedirect;
+        window.open(data.paymentRedirect, '_blank');
+        clearCart();
       } else {
         clearCart();
         queryClient.invalidateQueries({ queryKey: ['orders'] });

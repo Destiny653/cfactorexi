@@ -18,8 +18,7 @@ export const login = async (email: string, password: string): Promise<User | any
       password: password,
       expiresInMins: 60, // optional, defaults to 60
     });
-
-    console.log("service res: ",response) 
+ 
     if(response.data.error) {
       toast.error(response.data.message)
       return null

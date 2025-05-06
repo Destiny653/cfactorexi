@@ -1,5 +1,5 @@
-// components/auth/RegisterForm.tsx
-'use client';
+ 'use client';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -44,6 +44,7 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterForm() {
   const router = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -72,7 +73,6 @@ export default function RegisterForm() {
 
       const responseData = await response.json();
 
-      // Handle all error cases first
       if (!response.ok || responseData.error) {
         throw new Error(responseData.message || 'Registration failed');
       }
@@ -89,9 +89,9 @@ export default function RegisterForm() {
         position: 'top-center',
         duration: 5000,
       });
-      // Don't navigate - just show the error
     },
   });
+
   const onSubmit = (data: RegisterFormValues) => {
     registerUser(data);
   };
@@ -189,12 +189,26 @@ export default function RegisterForm() {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="••••••••"
-                        {...field}
-                        className="focus:ring-2 focus:ring-blue-500"
-                      />
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="••••••••"
+                          {...field}
+                          className="focus:ring-2 focus:ring-blue-500 pr-10"
+                        />
+                        <button
+                          type="button"
+                          className="absolute right-3 top-1/2 -translate-y-1/2"
+                          onClick={() => setShowPassword(!showPassword)}
+                          aria-label={showPassword ? "Hide password" : "Show password"}
+                        >
+                          {showPassword ? (
+                            <Icons.EyeOffIcon className="h-4 w-4 text-gray-500" />
+                          ) : (
+                            <Icons.EyeIcon className="h-4 w-4 text-gray-500" />
+                          )}
+                        </button>
+                      </div>
                     </FormControl>
                     <FormMessage className="text-xs" />
                   </FormItem>

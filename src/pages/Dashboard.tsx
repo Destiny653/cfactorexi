@@ -118,7 +118,7 @@ const Dashboard: React.FC = () => {
         const order = item as Order;
         return (
           order._id?.toString().includes(searchTerm) ||
-          (order.products && order.products.some(p => p.title.toLowerCase().includes(searchTerm.toLowerCase())))
+          (order.products && order.products.some((p: { title: string; }) => p.title.toLowerCase().includes(searchTerm.toLowerCase())))
         );
       }
       return true;

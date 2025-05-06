@@ -2,24 +2,17 @@ import React from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
-import LoginForm from './components/auth/LoginForm';
 import Dashboard from './pages/Dashboard';
 import './index.css';
-import ForgotPasswordForm from './components/auth/forgotPasswordForm';
-import ResetPasswordForm from './components/auth/resetPasswordForm';
-import RegisterForm from './components/auth/registrationForm';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import HomePage from './pages/Home';
 import CartPage from './pages/Cart';
 import CheckoutPage from './pages/Checkout';
 import { CartProvider } from './context/CartContext';
-import { CartIcon } from './lib/CartIcon';
 import ProductPage from './pages/Product';
 import ProductDetail from './pages/productDetail';
-import VerificationSuccess from './components/auth/VerificationSuccess';
-import VerificationFailed from './components/auth/VerificationFailed';
-import EmailVerified from './components/auth/EmailVerified';
+import AuthRoutes from './routes/auth.route';
 
 // Create a client
 const queryClient = new QueryClient();
@@ -76,12 +69,8 @@ const App: React.FC = () => {
       <AuthProvider>
         <CartProvider>
           <Router>
-            <CartIcon />
             <Routes>
-              {/* Public Routes */}
-              <Route path="/login" element={<LoginForm />} />
-
-              {/* Protected Routes */}
+              <Route path="/*" element={<AuthRoutes />} />
               <Route
                 path="/dashboard"
                 element={
@@ -90,15 +79,10 @@ const App: React.FC = () => {
                   </ProtectedRoute>
                 }
               />
-
-              {/* Redirect to login or dashboard */}
               <Route
                 path="/"
                 element={<HomePage />}
               />
-              <Route path="/email-verified" element={<EmailVerified />} />
-              <Route path="/verification-success" element={<VerificationSuccess />} />
-              <Route path="/verification-failed" element={<VerificationFailed />} />
 
               <Route
                 path="/cart"
@@ -116,25 +100,6 @@ const App: React.FC = () => {
                 path="/checkout"
                 element={<CheckoutPage />}
               />
-              <Route
-                path="login"
-                element={<Navigate to="/login" replace />}
-              />
-
-              <Route
-                path='/register'
-                element={<RegisterForm />}
-              />
-
-              <Route
-                path="/forgot-password"
-                element={<ForgotPasswordForm />} // Placeholder for Forgot Password component
-              />
-              <Route
-                path="/reset-password"
-                element={<ResetPasswordForm />} // Placeholder for Reset Password component
-              />
-
               {/* 404 Not Found */}
               <Route
                 path="*"

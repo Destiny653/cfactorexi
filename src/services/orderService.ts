@@ -1,6 +1,11 @@
 import { api } from './api';
 import { Order } from '../types/dashboardTypes';
 
+interface CreateOrderResponse {
+    orderId: string;
+    // add other fields if needed
+}
+
 interface OrderItem {
     _id: string;
     name: string;
@@ -9,29 +14,6 @@ interface OrderItem {
     thumbnail: string;
     discountPercentage?: number;
 }
-
-interface CreateOrderResponse {
-    success: boolean;
-    order: {
-        _id: string;
-        user: string;
-        items: OrderItem[];
-        subtotal: number;
-        discountTotal: number;
-        total: number;
-        shippingAddress: {
-            address: string;
-            city: string;
-            postalCode: string;
-            country: string;
-        };
-        shippingMethod: string;
-        paymentMethod: string;
-        status: string;
-    };
-    paymentRedirect?: string;
-}
-
 
 export const orderService = {
     async createOrder(orderData: {
@@ -57,73 +39,64 @@ export const orderService = {
 
     async getAllOrders(): Promise<Order[]> {
         try {
-            const response = await api.get('/carts');
-            const carts = await response.data.carts || await response.data || [];
-
-            return carts.map((cart: any) => ({
-                id: cart.id || 0,
-                products: (cart.products || []).map((product: any) => ({
-                    _id: product._id || 0,
-                    title: product.title || 'Unknown Product',
-                    price: product.price || 0,
-                    quantity: product.quantity || 1,
-                    total: product.total || 0,
-                    discountPercentage: product.discountPercentage || 0,
-                    discountedTotal: product.discountedTotal || 0,
-                    thumbnail: product.thumbnail || ''
-                })),
-                total: cart.total || 0,
-                discountedTotal: cart.discountedTotal || 0,
-                userId: cart.userId || 0,
-                totalProducts: cart.totalProducts || 0,
-                totalQuantity: cart.totalQuantity || 0,
-                status: this.getValidStatus(cart.status),
-                date: cart.date || new Date().toISOString()
-            }));
+            const response = await api.get('/orders');
+            return response.data.map((order: any) => this.transformOrder(order));
         } catch (error) {
             console.error('Error fetching orders:', error);
             throw error;
         }
     },
 
-    getValidStatus(status: string): Order['status'] {
-        const validStatuses: Order['status'][] = ['pending', 'shipped', 'delivered', 'cancelled'];
-        return validStatuses.includes(status as any) ? status as Order['status'] : 'pending';
-    },
-
-    async getOrderById(id: number): Promise<Order> {
+    async getOrderById(id: string): Promise<Order> {
         try {
-            const response = await api.get(`/carts/${id}`); // Note the endpoint change to /carts
-            const cart = response.data;
-
-            return {
-                _id: cart._id,
-                products: cart.products.map((product: any) => ({
-                    id: product.id,
-                    title: product.title,
-                    price: product.price,
-                    quantity: product.quantity,
-                    total: product.total,
-                    discountPercentage: product.discountPercentage,
-                    discountedTotal: product.discountedTotal,
-                    thumbnail: product.thumbnail
-                })),
-                total: cart.total,
-                discountedTotal: cart.discountedTotal,
-                userId: cart.userId,
-                totalProducts: cart.totalProducts,
-                totalQuantity: cart.totalQuantity,
-                status: this.getRandomStatus(),
-                date: new Date().toISOString()
-            };
+            const response = await api.get(`/orders/${id}`);
+            return this.transformOrder(response.data);
         } catch (error) {
             console.error(`Error fetching order ${id}:`, error);
             throw error;
         }
     },
 
-    getRandomStatus(): Order['status'] {
-        const statuses: Order['status'][] = ['pending', 'shipped', 'delivered', 'cancelled'];
-        return statuses[Math.floor(Math.random() * statuses.length)];
+    transformOrder(order: any): Order {
+        return {
+    _id: order._id,
+    user: order.user ? {
+        _id: order.user._id,
+        name: order.user.name || `User ${order.user._id}`,
+        email: order.user.email || '',
+        avatar: order.user.avatar || ''
+    } : null,
+    items: order.items.map((item: any) => ({
+        _id: item._id,
+        title: item.name || item.title || 'Unknown Product',
+        price: item.price || 0,
+        quantity: item.quantity || 1,
+        total: (item.price || 0) * (item.quantity || 1),
+        discountPercentage: item.discountPercentage || 0,
+        discountedTotal: item.discountedPrice ||
+            (item.price || 0) * (item.quantity || 1) * (1 - (item.discountPercentage || 0) / 100),
+        thumbnail: item.thumbnail || ''
+    })),
+    subtotal: order.subtotal || 0,
+    discountTotal: order.discountTotal || 0,
+    total: order.total || 0,
+    shippingAddress: order.shippingAddress || {
+        address: '',
+        city: '',
+        postalCode: '',
+        country: ''
+    },
+    shippingMethod: order.shippingMethod || 'standard',
+    paymentMethod: order.paymentMethod || 'unknown',
+    status: this.getValidStatus(order.status),
+    createdAt: order.createdAt || new Date().toISOString(),
+    updatedAt: order.updatedAt || new Date().toISOString(),
+    products: undefined
+};
+    },
+
+    getValidStatus(status: string): Order['status'] {
+        const validStatuses: Order['status'][] = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+        return validStatuses.includes(status as any) ? status as Order['status'] : 'pending';
     }
 };

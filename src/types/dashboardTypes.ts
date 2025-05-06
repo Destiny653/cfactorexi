@@ -163,27 +163,35 @@ export interface Statistics {
   weeklySales: number;
 }
 
+// types/dashboardTypes.ts
+
 export interface Order {
-  _id: number;
-  products: {
-    _id: number;
+  products: any;
+  _id: string;
+  user?:any;
+  items: {
+    _id: string;
     title: string;
     price: number;
     quantity: number;
-    total: number;
-    discountPercentage: number;
-    discountedTotal: number;
-    thumbnail: string;
+    discountPercentage?: number;
+    thumbnail?: string;
   }[];
+  subtotal: number;
+  discountTotal: number;
   total: number;
-  discountedTotal: number;
-  userId: number;
-  totalProducts: number;
-  totalQuantity: number;
-  status?: 'pending' | 'shipped' | 'delivered' | 'cancelled';
-  date?: string;
+  shippingAddress: {
+    address: string;
+    city: string;
+    postalCode: string;
+    country: string;
+  };
+  shippingMethod: string;
+  paymentMethod: string;
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  createdAt: string;
+  updatedAt: string;
 }
-
 export interface CreateProductDto {
   title: string;
   description: string;

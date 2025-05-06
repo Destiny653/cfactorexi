@@ -59,14 +59,17 @@ const HomePage = () => {
             subtitle: 'Limited time discounts on selected items'
         }
     ];
-
-    const brandLogos = [
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/NARS_Logo.svg/2560px-NARS_Logo.svg.png',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/MAC_Cosmetics_logo.svg/1200px-MAC_Cosmetics_logo.svg.png',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Estee_Lauder_logo.svg/2560px-Estee_Lauder_logo.svg.png',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Clinique_logo.svg/1200px-Clinique_logo.svg.png',
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Charlotte_Tilbury_logo.svg/1200px-Charlotte_Tilbury_logo.svg.png'
-    ];
+    const brandLogos = [ 
+        'https://www.narscosmetics.com/on/demandware.static/-/Library-Sites-NARSSharedLibrary/default/dw5a0c1a2f/images/logo.png',
+         
+        'https://www.maccosmetics.com/media/export/cms/logo.png',
+         
+        'https://www.esteelauder.com/media/export/cms/el_logo.png',
+         
+        'https://www.clinique.com/media/export/cms/clinique_logo.png',
+     
+        'https://www.charlottetilbury.com/on/demandware.static/-/Library-Sites-CTSharedLibrary/default/dw2e6c5c8e/assets/logo.png'
+      ];
 
     const beautyTips = [
         {

@@ -53,15 +53,7 @@ export default function LoginForm() {
         body: JSON.stringify({ email: data.email, password: data.password }),
       });
 
-      const responseData = await response.json();
-
-      if(!responseData.isVerified) {
-        toast.error('Please check your email and verify before login!', {
-          position: 'top-center',
-          duration: 5000,
-        });
-        return;
-      }
+      const responseData = await response.json(); 
 
       if (!response.ok) {
         toast.error(responseData.message, {

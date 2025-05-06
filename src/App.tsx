@@ -19,6 +19,7 @@ import ProductPage from './pages/Product';
 import ProductDetail from './pages/productDetail';
 import VerificationSuccess from './components/auth/VerificationSuccess';
 import VerificationFailed from './components/auth/VerificationFailed';
+import EmailVerified from './components/auth/EmailVerified';
 
 // Create a client
 const queryClient = new QueryClient();
@@ -60,6 +61,7 @@ const App: React.FC = () => {
                 path="/"
                 element={<HomePage />}
               />
+              <Route path="/email-verified" element={<EmailVerified />} />
               <Route path="/verification-success" element={<VerificationSuccess />} />
               <Route path="/verification-failed" element={<VerificationFailed />} />
 

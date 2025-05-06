@@ -81,7 +81,7 @@ export default function RegisterForm() {
     },
     onSuccess: () => {
       toast.success('Registration successful! Please check your email to verify your account.');
-      router('/login');
+      router('/email-verified?'+new URLSearchParams({ email: form.getValues('email') }).toString());
     },
     onError: (error) => {
       toast.error(error.message, {

@@ -29,12 +29,47 @@ const App: React.FC = () => {
       <Toaster
         position="top-right"
         toastOptions={{
-          className: ' ',
           duration: 4000,
+          className: 'react-hot-toast',
           style: {
-            backgroundColor: '#77e980e5',
-            border: '1px solid #77e980e5',
-            color: '#fff',
+            fontFamily: 'inherit',
+            fontSize: '0.875rem',
+            maxWidth: '500px',
+          },
+          success: {
+            className: '!bg-emerald-500 !text-white',
+            iconTheme: {
+              primary: '#fff',
+              secondary: '#10b981',
+            },
+            style: {
+              border: '1px solid #059669',
+              boxShadow: '0 4px 12px rgba(5, 150, 105, 0.2)',
+            },
+          },
+          error: {
+            className: '!bg-rose-500 !text-white',
+            iconTheme: {
+              primary: '#fff',
+              secondary: '#f43f5e',
+            },
+            style: {
+              border: '1px solid #e11d48',
+              boxShadow: '0 4px 12px rgba(225, 29, 72, 0.2)',
+            },
+          },
+          loading: {
+            className: '!bg-blue-500 !text-white',
+            style: {
+              border: '1px solid #3b82f6',
+              boxShadow: '0 4px 12px rgba(59, 130, 246, 0.2)',
+            },
+          },
+          blank: {
+            className: '!bg-gray-500 !text-white',
+          },
+          custom: {
+            className: '!bg-indigo-500 !text-white',
           },
         }}
       />

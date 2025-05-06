@@ -80,8 +80,9 @@ export default function RegisterForm() {
       return responseData;
     },
     onSuccess: () => {
-      toast.success('Registration successful! Please check your email to verify your account.');
-      router('/email-verified?'+new URLSearchParams({ email: form.getValues('email') }).toString());
+      toast.success('Registration successful! Please check your email to verify your account.');  
+      const email = encodeURIComponent(form.getValues('email'));
+      router(`/email-verified?email=${email}`);
     },
     onError: (error) => {
       toast.error(error.message, {

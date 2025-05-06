@@ -17,6 +17,8 @@ import { CartProvider } from './context/CartContext';
 import { CartIcon } from './lib/CartIcon';
 import ProductPage from './pages/Product';
 import ProductDetail from './pages/productDetail';
+import VerificationSuccess from './components/auth/VerificationSuccess';
+import VerificationFailed from './components/auth/VerificationFailed';
 
 // Create a client
 const queryClient = new QueryClient();
@@ -38,7 +40,7 @@ const App: React.FC = () => {
       <AuthProvider>
         <CartProvider>
           <Router>
-          <CartIcon />
+            <CartIcon />
             <Routes>
               {/* Public Routes */}
               <Route path="/login" element={<LoginForm />} />
@@ -58,13 +60,16 @@ const App: React.FC = () => {
                 path="/"
                 element={<HomePage />}
               />
+              <Route path="/verification-success" element={<VerificationSuccess />} />
+              <Route path="/verification-failed" element={<VerificationFailed />} />
+
               <Route
                 path="/cart"
                 element={<CartPage />}
               />
               <Route
                 path="/products/:id"
-                element={<ProductDetail/>}
+                element={<ProductDetail />}
               />
               <Route
                 path="/products"

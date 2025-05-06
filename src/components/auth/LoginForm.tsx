@@ -13,14 +13,14 @@ import {
   FormLabel,
   FormMessage,
 } from '../../components/ui/form';
-import { Input } from '../../components/ui/input';
-import { toast } from 'sonner';
+import { Input } from '../../components/ui/input'; 
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Icons } from '../../components/icons';
 import { API_URL } from '../../helper/url';
 import { useAuth } from '../../context/AuthContext';
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -54,6 +54,14 @@ export default function LoginForm() {
       });
 
       const responseData = await response.json();
+
+      if(!responseData.isVerified) {
+        toast.error('Please check your email and verify before login!', {
+          position: 'top-center',
+          duration: 5000,
+        });
+        return;
+      }
 
       if (!response.ok) {
         toast.error(responseData.message, {

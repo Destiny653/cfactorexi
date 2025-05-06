@@ -1,4 +1,4 @@
- // components/auth/RegisterForm.tsx
+// components/auth/RegisterForm.tsx
 'use client';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,8 +15,7 @@ import {
   FormMessage,
 } from '../../components/ui/form';
 import { Input } from '../../components/ui/input';
-import { toast } from 'sonner'; 
-import {Link }from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Icons } from '../../components/icons';
 import {
@@ -27,6 +26,7 @@ import {
   SelectValue,
 } from '../../components/ui/select';
 import { API_URL } from '../../helper/url';
+import toast from 'react-hot-toast';
 
 const registerSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -62,7 +62,7 @@ export default function RegisterForm() {
 
   const { mutate: registerUser, isPending } = useMutation({
     mutationFn: async (data: RegisterFormValues) => {
-      const response = await fetch(API_URL+'/auth/register', {
+      const response = await fetch(API_URL + '/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -70,22 +70,27 @@ export default function RegisterForm() {
         body: JSON.stringify(data),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Registration failed');
+      const responseData = await response.json();
+
+      // Handle all error cases first
+      if (!response.ok || responseData.error) {
+        throw new Error(responseData.message || 'Registration failed');
       }
 
-      return response.json();
+      return responseData;
     },
     onSuccess: () => {
       toast.success('Registration successful! Please check your email to verify your account.');
       router('/login');
     },
     onError: (error) => {
-      toast.error(error.message);
+      toast.error(error.message, {
+        position: 'top-center',
+        duration: 5000,
+      });
+      // Don't navigate - just show the error
     },
   });
-
   const onSubmit = (data: RegisterFormValues) => {
     registerUser(data);
   };

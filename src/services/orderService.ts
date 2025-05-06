@@ -2,6 +2,7 @@ import { api } from './api';
 import { Order } from '../types/dashboardTypes';
 
 interface CreateOrderResponse {
+    paymentRedirect: any;
     orderId: string;
     // add other fields if needed
 }

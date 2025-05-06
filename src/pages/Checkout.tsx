@@ -102,7 +102,7 @@ const CheckoutPage = () => {
       } else {
         clearCart();
         queryClient.invalidateQueries({ queryKey: ['orders'] });
-        navigate('/order-success', { state: { orderId: data.order._id } });
+        navigate('/order-success', { state: { orderId: data.orderId } });
       }
     },
     onError: (error) => {

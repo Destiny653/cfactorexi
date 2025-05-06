@@ -14,7 +14,7 @@ interface User {
 
 interface AuthContextType {
   user: User | any;
-  login: (username: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
 

@@ -11,10 +11,10 @@ interface User {
   token: string;
 }
 
-export const login = async (username: string, password: string): Promise<User | any> => {
+export const login = async (email: string, password: string): Promise<User | any> => {
   try {
     const response = await axios.post(API_URL+'/auth/login', {
-      username: username,
+      email: email,
       password: password,
       expiresInMins: 60, // optional, defaults to 60
     });
@@ -27,12 +27,12 @@ export const login = async (username: string, password: string): Promise<User | 
      
     // The response includes user details and a token
     return {
-      id: response.data.id,
-      username: response.data.username,
-      email: response.data.email,
-      firstName: response.data.firstName,
-      lastName: response.data.lastName,
-      token: response.data.token
+      id: response.data.user._id,
+      username: response.data.user.username,
+      email: response.data.user.email,
+      firstName: response.data.user.firstName,
+      lastName: response.data.user.lastName,
+      token: response.data.access_token
     };
   } catch (error) {
     if (axios.isAxiosError(error)) {

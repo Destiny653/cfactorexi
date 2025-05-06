@@ -70,9 +70,9 @@ const OrdersTable: React.FC<DataTableProps<Order>> = ({ data, loading }) => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((order) => (
-            <TableRow key={order._id} className="hover:bg-gray-50/50">
-              <TableCell className="font-medium">#{order._id.slice(0, 8)}</TableCell>
+          {data?.map((order) => (
+            <TableRow key={order?._id} className="hover:bg-gray-50/50">
+              <TableCell className="font-medium">#{order._id?.slice(0, 8)}</TableCell>
               <TableCell>
                 {order.user ? (
                   <div className="flex items-center gap-2">
@@ -94,7 +94,7 @@ const OrdersTable: React.FC<DataTableProps<Order>> = ({ data, loading }) => {
               <TableCell>
                 <div className="flex items-center">
                   <div className="flex -space-x-2">
-                    {order.items.slice(0, 3).map((item) => (
+                    {order.items?.slice(0, 3).map((item) => (
                       <Avatar key={item._id} className="h-8 w-8 border-2 border-white">
                         <AvatarImage src={item.thumbnail} alt={item.title} />
                         <AvatarFallback>
@@ -103,15 +103,15 @@ const OrdersTable: React.FC<DataTableProps<Order>> = ({ data, loading }) => {
                       </Avatar>
                     ))}
                   </div>
-                  {order.items.length > 3 && (
+                  {order.items?.length > 3 && (
                     <span className="ml-2 text-sm text-gray-500">
-                      +{order.items.length - 3} more
+                      +{order.items?.length - 3} more
                     </span>
                   )}
                 </div>
               </TableCell>
               <TableCell className="font-semibold">
-                ${order.total.toLocaleString(undefined, { 
+                ${order.total?.toLocaleString(undefined, { 
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2 
                 })}

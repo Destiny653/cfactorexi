@@ -59,13 +59,13 @@ const HomePage = () => {
             subtitle: 'Limited time discounts on selected items'
         }
     ];
-    const brandLogos = [
-  "https://cdn.shopify.com/s/files/1/0002/2070/4636/files/nars_logo_large.png",
-  "https://cdn.shopify.com/s/files/1/0002/2070/4636/files/mac_logo_large.png",
-  "https://cdn.shopify.com/s/files/1/0002/2070/4636/files/esteelauder_logo_large.png",
-  "https://cdn.shopify.com/s/files/1/0002/2070/4636/files/clinique_logo_large.png",
-  "https://cdn.shopify.com/s/files/1/0002/2070/4636/files/charlottetilbury_logo_large.png"
-]
+//     const brandLogos = [
+//   "https://cdn.shopify.com/s/files/1/0002/2070/4636/files/nars_logo_large.png",
+//   "https://cdn.shopify.com/s/files/1/0002/2070/4636/files/mac_logo_large.png",
+//   "https://cdn.shopify.com/s/files/1/0002/2070/4636/files/esteelauder_logo_large.png",
+//   "https://cdn.shopify.com/s/files/1/0002/2070/4636/files/clinique_logo_large.png",
+//   "https://cdn.shopify.com/s/files/1/0002/2070/4636/files/charlottetilbury_logo_large.png"
+// ]
 
 
     const beautyTips = [

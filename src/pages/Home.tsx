@@ -59,17 +59,14 @@ const HomePage = () => {
             subtitle: 'Limited time discounts on selected items'
         }
     ];
-    const brandLogos = [ 
-        'https://www.narscosmetics.com/on/demandware.static/-/Library-Sites-NARSSharedLibrary/default/dw5a0c1a2f/images/logo.png',
-         
-        'https://www.maccosmetics.com/media/export/cms/logo.png',
-         
-        'https://www.esteelauder.com/media/export/cms/el_logo.png',
-         
-        'https://www.clinique.com/media/export/cms/clinique_logo.png',
-     
-        'https://www.charlottetilbury.com/on/demandware.static/-/Library-Sites-CTSharedLibrary/default/dw2e6c5c8e/assets/logo.png'
-      ];
+    const brandLogos = [
+  "https://cdn.shopify.com/s/files/1/0002/2070/4636/files/nars_logo_large.png",
+  "https://cdn.shopify.com/s/files/1/0002/2070/4636/files/mac_logo_large.png",
+  "https://cdn.shopify.com/s/files/1/0002/2070/4636/files/esteelauder_logo_large.png",
+  "https://cdn.shopify.com/s/files/1/0002/2070/4636/files/clinique_logo_large.png",
+  "https://cdn.shopify.com/s/files/1/0002/2070/4636/files/charlottetilbury_logo_large.png"
+]
+
 
     const beautyTips = [
         {
@@ -151,7 +148,7 @@ const HomePage = () => {
             </div>
 
             {/* Brand Showcase */}
-            <section className="py-12 bg-gray-50">
+            {/* <section className="py-12 bg-gray-50">
                 <div className="container mx-auto px-4">
                     <h3 className="text-center text-gray-500 uppercase text-sm tracking-wider mb-8">Trusted By Premium Brands</h3>
                     <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16">
@@ -164,13 +161,13 @@ const HomePage = () => {
                                 <img
                                     src={logo}
                                     alt={`Brand ${index + 1}`}
-                                    className="h-12 object-contain" 
+                                    className="h-12 object-contain"
                                 />
                             </motion.div>
                         ))}
                     </div>
                 </div>
-            </section>
+            </section> */}
 
             {/* Featured Products */}
             <section className="py-20 px-4 sm:px-8 bg-white">

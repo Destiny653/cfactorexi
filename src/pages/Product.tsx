@@ -15,6 +15,7 @@ const ProductsPage = () => {
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
     const [selectedRating, setSelectedRating] = useState<number | null>(null);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // New state for sidebar
     const { addToCart } = useCart();
 
     useEffect(() => {
@@ -25,7 +26,6 @@ const ProductsPage = () => {
                 setProducts(fetchedProducts);
                 setError(null);
 
-                // Calculate max price for range slider
                 const maxPrice = Math.max(...fetchedProducts.map(p => p.price));
                 setPriceRange([0, Math.ceil(maxPrice)]);
             } catch (err) {
@@ -40,10 +40,8 @@ const ProductsPage = () => {
         fetchProducts();
     }, []);
 
-    // Get unique categories for filter
     const categories = ['all', ...new Set(products.map(product => product.category))];
 
-    // Filter products based on all criteria
     const filteredProducts = products.filter(product => {
         const matchesSearch = product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
             product.description.toLowerCase().includes(searchTerm.toLowerCase());
@@ -64,10 +62,9 @@ const ProductsPage = () => {
                 stock: product.stock
             }, 1);
 
-            // Enhanced toast notification with product image
             toast.custom((t) => (
                 <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} 
-          max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}>
+                    max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}>
                     <div className="flex-1 w-0 p-4">
                         <div className="flex items-start">
                             <div className="flex-shrink-0 pt-0.5">
@@ -136,8 +133,19 @@ const ProductsPage = () => {
         <div className="min-h-screen bg-white text-gray-800">
             <Header />
             <div className="container mx-auto py-12 px-4 relative">
-                <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
+                <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-6">
                     <h1 className="text-3xl font-serif text-indigo-900">Our Luxury Collection</h1>
+                    
+                    {/* Filter button for mobile */}
+                    <button
+                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                        className="lg:hidden flex items-center justify-center gap-2 px-4 py-2 bg-indigo-900 text-white rounded-lg hover:bg-indigo-800 transition-colors"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2zM3 16a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z" />
+                        </svg>
+                        <span>Filters</span>
+                    </button>
 
                     <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
                         <div className="relative flex-1">
@@ -157,7 +165,16 @@ const ProductsPage = () => {
 
                 <div className="flex flex-col lg:flex-row gap-8 relative">
                     {/* Sidebar Filters */}
-                    <div className="lg:w-1/4 bg-white rounded-xl border border-gray-200 p-6 h-fit sticky left-0 top-0 shadow-sm">
+                    {/* Conditional classes to show/hide the sidebar and apply correct layout */}
+                    <aside
+                        className={`
+                            ${isSidebarOpen ? 'block' : 'hidden'} 
+                            lg:block
+                            lg:w-1/4
+                            bg-white rounded-xl border border-gray-200 p-6 shadow-sm
+                            lg:sticky lg:top-8 lg:h-fit
+                        `}
+                    >
                         <h2 className="text-xl font-serif mb-6 text-indigo-900">Filters</h2>
 
                         {/* Category Filter */}
@@ -185,8 +202,8 @@ const ProductsPage = () => {
                             <div className="px-2">
                                 <input
                                     type="range"
-                                    min={priceRange[0]}
-                                    max={priceRange[1]}
+                                    min={0}
+                                    max={Math.max(...products.map(p => p.price))}
                                     value={priceRange[1]}
                                     onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
                                     className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
@@ -241,10 +258,10 @@ const ProductsPage = () => {
                         >
                             Reset All Filters
                         </button>
-                    </div>
+                    </aside>
 
                     {/* Main Product Grid */}
-                    <div className="lg:w-3/4">
+                      <div className="lg:w-3/4">
                         {filteredProducts.length === 0 ? (
                             <div className="text-center py-20">
                                 <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
